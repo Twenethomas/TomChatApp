@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - TomChat{% endblock %}
+
+{% block content %}
+    <h1>Profile</h1>
+    <div class="profile-info">
+        <p><strong>Username:</strong> {{ current_user.username }}</p>
+        <p><strong>Status:</strong> {{ current_user.status }}</p>
+        <p><strong>Last Seen:</strong> {{ current_user.last_seen }}</p>
+    </div>
+    <a href="{{ url_for('edit_profile') }}" class="btn">Edit Profile</a>
+{% endblock %}

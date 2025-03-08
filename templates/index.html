@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Home - TomChat{% endblock %}
+
+{% block content %}
+    <nav>
+        <div class="logo">TomChat</div>
+        <div class="nav-links">
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('register') }}">Register</a>
+        </div>
+    </nav>
+    <h1>Welcome to TomChat</h1>
+    <p>Connect with your friends and family in real-time.</p>
+    <a href="{{ url_for('login') }}" class="btn">Login</a>
+    <a href="{{ url_for('register') }}" class="btn">Register</a>
+{% endblock %}
