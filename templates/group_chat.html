@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Group Chat - TomChat{% endblock %}
+
+{% block content %}
+    <h1>{{ group.group_name }}</h1>
+    <div class="chat-messages" id="chat-messages">
+        {% for message in group.messages %}
+            <div class="message">
+                <strong>{{ message.sender.username }}:</strong> {{ message.message_text }}
+                {% if message.file_url %}
+                    <a href="{{ message.file_url }}" target="_blank">View File</a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="chat-input">
+        <input type="text" id="message-input" placeholder="Type a message...">
+        <input type="file" id="file-input">
+        <button id="send-button">Send</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        document.getElementById('send-button').addEventListener('click', function () {
+            const message = document.getElementById('message-input').value.trim();
+            const file = document.getElementById('file-input').files[0];
+
+            const formData = new FormData();
+            formData.append('message', message);
+            formData.append('receiver_id', '{{ group.custom_id }}');
+            if (file) {
+                formData.append('file', file);
+            }
+
+            fetch('/send_message', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json())
+              .then(data => {
+                  if (data.success) {
+                      document.getElementById('message-input').value = '';
+                  }
+              });
+        });
+
+        socket.on('receive_message', function (data) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.innerHTML = `<strong>${data.sender_id}:</strong> ${data.message}`;
+            if (data.file_url) {
+                messageElement.innerHTML += `<a href="${data.file_url}" target="_blank">View File</a>`;
+            }
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
+    </script>
+{% endblock %}

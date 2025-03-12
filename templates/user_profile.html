@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - TomChat{% endblock %}
+
+{% block content %}
+    <h1>Profile</h1>
+    <form method="POST" action="{{ url_for('profile') }}">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" value="{{ current_user.username }}" required>
+
+        <label for="status">Status:</label>
+        <input type="text" id="status" name="status" value="{{ current_user.status }}" required>
+
+        <button type="submit">Update Profile</button>
+    </form>
+{% endblock %}

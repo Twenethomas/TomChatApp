@@ -9,5 +9,5 @@
         <p><strong>Status:</strong> {{ current_user.status }}</p>
         <p><strong>Last Seen:</strong> {{ current_user.last_seen }}</p>
     </div>
-    <a href="{{ url_for('edit_profile') }}" class="btn">Edit Profile</a>
+    <a href="{{ url_for('message.edit_profile') }}" class="btn">Edit Profile</a>
 {% endblock %}
