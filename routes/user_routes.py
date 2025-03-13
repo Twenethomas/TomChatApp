@@ -1,10 +1,9 @@
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify, url_for, session, redirect
 from flask_login import login_user, logout_user, login_required, current_user
+
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import Contacts, Users, FriendRequest
+from models import Contacts, FriendRequest, Users
 from extensions import db, socketio
-import uuid
-from flask_socketio import emit
 
 user_bp = Blueprint('user', __name__)
 
@@ -13,13 +12,25 @@ def login():
     data = request.json
     username = data.get('username')
     password = data.get('password')
+
     user = Users.query.filter_by(username=username).first()
+
     if user and check_password_hash(user.password, password):
         login_user(user)
-        session['user_id'] = user.custom_id
-        return jsonify({'success': True, 'message': 'Login successful'}), 200
-    else:
-        return jsonify({'error': 'Invalid username or password'}), 401
+        session['user_id'] = user.custom_id  # ✅ Store custom_id in session
+
+        # Check if there's a `next` parameter (e.g., if the user was redirected from `/chat`)
+        next_page = request.args.get('next')
+        if next_page:
+            return jsonify({"redirect": next_page})
+
+        # Redirect admin to `/admin/dashboard`, others to `/chat`
+        if user.is_admin:
+            return jsonify({"redirect": url_for('admin.admin_dashboard')})
+        return jsonify({"redirect": url_for('message.chat_page')})
+
+    return jsonify({"error": "Invalid credentials"}), 401
+
 
 @user_bp.route('/register', methods=['POST'])
 def register():
@@ -27,33 +38,36 @@ def register():
     username = data.get('username')
     password = data.get('password')
     is_admin = data.get('is_admin', False)
-    if Users.query.filter_by(username=username).first():
-        return jsonify({'error': 'Username already exists'}), 400
-    custom_id = f"FCM.41.008.{Users.query.count() + 1:03d}.{uuid.uuid4().hex[:4]}"
-    if is_admin:
-        new_user = Users(
-            custom_id=custom_id,
-            username=username,
-            password=generate_password_hash(password),
-            is_admin=True
-        )
-    else :
-        new_user=Users(
-            custom_id=custom_id,
-            username=username,
-            password=password,
-            is_admin=False)
+
+    if isinstance(is_admin, str):
+        is_admin = is_admin.lower() in ['true', '1', 'on', 'yes']
+
+    if not username or not password:
+        return jsonify({"error": "Username and password are required"}), 400
+
+    existing_user = Users.query.filter_by(username=username).first()
+    if existing_user:
+        return jsonify({"redirect": "login_tab", "message": "User already exists. Please log in."}), 200
+
+    custom_id = f"FCM.41.008.{Users.query.count() + 1:03d}"
+    new_user = Users(
+        custom_id=custom_id,
+        username=username,
+        password=generate_password_hash(password),
+        is_admin=is_admin
+    )
+
     db.session.add(new_user)
     db.session.commit()
-    login()
-    session['user_id'] = new_user.custom_id
-    return jsonify({'success': True, 'message': 'Registration successful'}), 201
+
+    return jsonify({"success": True, "message": "Registration successful! Please log in."}), 201
+
 
 @user_bp.route('/logout', methods=['POST'])
 @login_required
 def logout():
     logout_user()
-    session.pop('user_id', None)
+    session.pop('user_id', None)  # ✅ Clear session
     return jsonify({'success': True, 'message': 'Logout successful'}), 200
 
 @user_bp.route('/api/friend_request', methods=['POST'])
@@ -93,7 +107,7 @@ def decline_friend_request(request_id):
         return jsonify({'error': 'Invalid request'}), 400
     friend_request.status = "declined"
     db.session.commit()
-    emit('friend_request_declined', {
+    socketio.emit('friend_request_declined', {
         'request_id': request_id,
         'receiver_id': current_user.custom_id
     }, room=friend_request.sender_id)

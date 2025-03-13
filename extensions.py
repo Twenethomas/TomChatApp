@@ -7,6 +7,7 @@ login_manager = LoginManager()
 socketio = SocketIO()
 
 @login_manager.user_loader
-def load_user(user_id):
+def load_user(username):
     from models import Users
-    return Users.query.get(user_id)
+    return Users.query.filter_by(username=username).first()
+

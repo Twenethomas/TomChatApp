@@ -119,7 +119,7 @@ document.getElementById("send-button").addEventListener("click", () => {
 socket.on("receive_message", data => {
     if (data.receiver_id === currentUser.custom_id) {
         const isCurrentUser = data.sender_id === currentUser.custom_id;
-        appendMessage(data.sender_id, data.message_text, data.timestamp, isCurrentUser);
+        appendMessage(data.sender_name, data.message_text, data.timestamp, isCurrentUser);
     }
 });
 

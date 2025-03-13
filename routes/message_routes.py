@@ -45,11 +45,12 @@ def send_message():
     )
     db.session.add(new_message)
     db.session.commit()
-
+    sender= Users.query.filter_by(custom_id = current_user.custom_id).first()
     socketio.emit('receive_message', {
         'sender_id': current_user.custom_id,
         'receiver_id': receiver_id,
         'message_text': message_text,
+        'sender_name': sender.username,
         'timestamp': new_message.timestamp.strftime('%H:%M')
     }, room=receiver_id)
 

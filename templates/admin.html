@@ -7,33 +7,30 @@
 <!-- Sidebar -->
 <div class="wrapper">
     <!-- Sidebar -->
-<nav id="sidebar" class="active">
-    <div class="sidebar-header">
-        <h3>Admin Dashboard</h3>
-    </div>
-
-    <ul class="list-unstyled components">
-        <li>
-            <a href="#users" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Users</a>
-            <ul class="collapse list-unstyled" id="users">
-                <li><a href="#all-users">All Users</a></li>
-                <li><a href="#online-users">Online Users</a></li>
-            </ul>
-        </li>
-        <li>
-            <a href="#groups" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Groups</a>
-            <ul class="collapse list-unstyled" id="groups">
-                <li><a href="#all-groups">All Groups</a></li>
-            </ul>
-        </li>
-        <li>
-            <a href="#messages" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Messages</a>
-            <ul class="collapse list-unstyled" id="messages">
-                <li><a href="#all-messages">All Messages</a></li>
-            </ul>
-        </li>
-    </ul>
-</nav>
+    <nav>
+        <ul class="pagination">
+            {% if users.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.admin_dashboard', page=users.prev_num) }}">Previous</a>
+                </li>
+            {% endif %}
+            {% for num in users.iter_pages() %}
+                {% if num %}
+                    <li class="page-item {{ 'active' if num == users.page else '' }}">
+                        <a class="page-link" href="{{ url_for('admin.admin_dashboard', page=num) }}">{{ num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endfor %}
+            {% if users.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.admin_dashboard', page=users.next_num) }}">Next</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    
 
 <!-- Toggle Button for Sidebar -->
 <button type="button" id="sidebarCollapse" class="btn btn-info">
@@ -52,7 +49,7 @@
                 <div class="card bg-primary text-white mb-4">
                     <div class="card-body">
                         <h5 class="card-title">Total Users</h5>
-                        <p class="card-text">{{ users|length }}</p>
+                        <p class="card-text">{{ total_users|length }}</p>
                     </div>
                 </div>
             </div>
@@ -68,7 +65,7 @@
                 <div class="card bg-warning text-white mb-4">
                     <div class="card-body">
                         <h5 class="card-title">Total Messages</h5>
-                        <p class="card-text">{{ messages|length }}</p>
+                        <p class="card-text">{{ total_messages|length }}</p>
                     </div>
                 </div>
             </div>

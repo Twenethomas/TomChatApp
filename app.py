@@ -39,15 +39,9 @@ def update_last_seen():
         current_user.last_seen = datetime.utcnow()
         db.session.commit()
 
-from flask_login import LoginManager
-
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'user.login'  # ✅ Redirects to login if not authenticated
-
 @login_manager.user_loader
 def load_user(user_id):
-    return Users.query.filter_by(custom_id=user_id).first()  # ✅ Fetch user by custom_id
+    return Users.query.filter_by(custom_id=user_id).first()  # ✅ Load user by custom_id
 
 
 if __name__ == '__main__':

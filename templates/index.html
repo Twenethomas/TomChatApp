@@ -193,6 +193,7 @@ form button:hover {
                 </div>
             </div>
 
+            <!-- Login Tab -->
             <div class="tab-content" id="login">
                 <h2>Login</h2>
                 <form id="login-form" onsubmit="submitLoginForm(event)">
@@ -203,18 +204,21 @@ form button:hover {
                 <div id="login-message" class="message"></div>
             </div>
 
-            <div class="tab-content" onsubmit="submitRegisterForm(event)" id="register">
-                <h2>Register</h2>
-                <form method="POST">
-                    <input type="text" name="username" placeholder="Username" required>
-                    <input type="password" name="password" placeholder="Password" required>
-                    <label>
-                      <input type="checkbox" name="is_admin"> Register as admin
-                    </label>
-                    <button type="submit">Register</button>
-                </form>
-                <div id="register-message" class="message"></div>
-            </div>
+            <!-- Registration Tab -->
+<div class="tab-content" id="register">
+    <h2>Register</h2>
+    <form id="register-form" onsubmit="submitRegisterForm(event)">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <label>
+            <input type="checkbox" name="is_admin"> Register as admin
+        </label>
+        <button type="submit">Register</button>
+    </form>
+    <div id="register-message" class="message"></div>
+</div>
+
+
         </div>
     </div>
 
@@ -235,57 +239,76 @@ form button:hover {
             document.querySelector(`button[onclick="openTab('${tabName}')"]`).classList.add('active');
         }
 
-        async function submitLoginForm(event) {
-            event.preventDefault();
-            const form = event.target;
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
+    async function submitLoginForm(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
 
-            try {
-                const response = await fetch('/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data),
-                });
+    try {
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
 
-                const result = await response.json();
-                if (response.ok) {
-                    window.location.href = '/chat'; // Redirect to chat page on success
-                } else {
-                    document.getElementById('login-message').innerText = result.error || 'Login failed';
-                }
-            } catch (error) {
-                document.getElementById('login-message').innerText = 'An error occurred. Please try again.';
+        const result = await response.json();
+
+        if (response.ok) {
+            console.log("Login successful, redirecting...");
+
+            // Check if the server provided a redirect URL
+            if (result.redirect) {
+                window.location.href = result.redirect;
+            } else {
+                document.getElementById('login-message').innerText = "Unexpected error. Please try again.";
             }
+        } else {
+            document.getElementById('login-message').innerText = result.error || 'Login failed';
         }
+    } catch (error) {
+        document.getElementById('login-message').innerText = 'An error occurred. Please try again.';
+        console.error("Login error:", error);
+    }
+}
 
-        async function submitRegisterForm(event) {
-            event.preventDefault();
-            const form = event.target;
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
 
-            try {
-                const response = await fetch('/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data),
-                });
+async function submitRegisterForm(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
 
-                const result = await response.json();
-                if (response.ok) {
-                    window.location.href = '/chat'; // Redirect to chat page on success
-                } else {
-                    document.getElementById('register-message').innerText = result.error || 'Registration failed';
-                }
-            } catch (error) {
-                document.getElementById('register-message').innerText = 'An error occurred. Please try again.';
+    // Convert "on" to true/false for is_admin
+    data.is_admin = data.is_admin === "on";
+
+    try {
+        const response = await fetch('/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            if (result.redirect === "login_tab") {
+                document.getElementById('register-message').innerText = result.message;
+                openTab('login'); // Switch to login tab
+            } else {
+                document.getElementById('register-message').innerText = "Registration successful! Please log in.";
+                openTab('login'); // Switch to login tab
             }
+        } else {
+            document.getElementById('register-message').innerText = result.error || 'Registration failed';
         }
+    } catch (error) {
+        document.getElementById('register-message').innerText = 'An error occurred. Please try again.';
+        console.error("Registration error:", error);
+    }
+}
+
+
     </script>
 </body>
 </html>
