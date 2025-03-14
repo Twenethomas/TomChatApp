@@ -53,6 +53,14 @@ def send_message():
         'sender_name': sender.username,
         'timestamp': new_message.timestamp.strftime('%H:%M')
     }, room=receiver_id)
+    # Also emit to sender's room to update their UI
+    socketio.emit('receive_message', {
+        'sender_id': current_user.custom_id,
+        'receiver_id': receiver_id,
+        'message_text': message_text,
+        'sender_name': sender.username,
+        'timestamp': new_message.timestamp.strftime('%H:%M')
+    }, room=current_user.custom_id)
 
     return jsonify({'success': True, 'message': 'Message sent successfully'}), 201
 
@@ -76,3 +84,15 @@ def get_messages(receiver_id):
     } for msg in messages]
 
     return jsonify(chat_data)
+
+@message_bp.route('/api/mark_as_read/<sender_id>', methods=['POST'])
+@login_required
+def mark_as_read(sender_id):
+    # Mark all messages from this sender as read
+    Messages.query.filter_by(
+        sender_id=sender_id,
+        receiver_id=current_user.custom_id,
+        is_read=False
+    ).update({'is_read': True})
+    db.session.commit()
+    return jsonify({'success': True})

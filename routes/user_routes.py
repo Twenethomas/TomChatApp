@@ -1,8 +1,9 @@
 from flask import Blueprint, request, jsonify, url_for, session, redirect
 from flask_login import login_user, logout_user, login_required, current_user
 
+from flask_socketio import emit
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import Contacts, FriendRequest, Users
+from models import Contacts, FriendRequest, Messages, Users
 from extensions import db, socketio
 
 user_bp = Blueprint('user', __name__)
@@ -28,7 +29,8 @@ def login():
         if user.is_admin:
             return jsonify({"redirect": url_for('admin.admin_dashboard')})
         return jsonify({"redirect": url_for('message.chat_page')})
-
+    emit('update_status', {'user_id': user.custom_id, 'status': 'online'}, broadcast=True)
+        
     return jsonify({"error": "Invalid credentials"}), 401
 
 
@@ -67,7 +69,10 @@ def register():
 @login_required
 def logout():
     logout_user()
+    user= Users.query.filter_by(is_online=True)
     session.pop('user_id', None)  # ✅ Clear session
+    emit('update_status', {'user_id': user.custom_id, 'status': 'offline'}, broadcast=True)
+    
     return jsonify({'success': True, 'message': 'Logout successful'}), 200
 
 @user_bp.route('/api/friend_request', methods=['POST'])
@@ -92,11 +97,12 @@ def send_friend_request():
 @login_required
 def get_friend_requests():
     requests = FriendRequest.query.filter_by(receiver_id=current_user.custom_id, status="pending").all()
-    friend_requests = [{
+    friend_requests = [
+        {
         "request_id": req.custom_id,
-        "sender_id": req.sender_id,
-        "sender_username": req.sender.username
+        "sender_id": req.sender_id
     } for req in requests]
+
     return jsonify(friend_requests), 200
 
 @user_bp.route('/api/friend_request/decline/<request_id>', methods=['POST'])
@@ -155,21 +161,49 @@ def search_users():
 @user_bp.route('/api/friends', methods=['GET'])
 @login_required
 def get_friends():
-    # Here, we consider accepted friend requests as friendships
     friends = FriendRequest.query.filter(
-        ((FriendRequest.sender_id == current_user.custom_id) | (FriendRequest.receiver_id == current_user.custom_id)),
+        ((FriendRequest.sender_id == current_user.custom_id) | 
+        (FriendRequest.receiver_id == current_user.custom_id)),
         FriendRequest.status == "accepted"
     ).all()
+    
     friend_data = []
     for req in friends:
         friend_id = req.receiver_id if req.sender_id == current_user.custom_id else req.sender_id
         friend = Users.query.get(friend_id)
-        if friend:
-            friend_data.append({
-                "custom_id": friend.custom_id,
-                "username": friend.username,
-                "profile_picture": friend.profile_picture,
-                "last_seen": friend.last_seen,
-                "is_online": friend.is_online
+        if not friend:
+            continue
+
+        # Get unread message count
+        unread_count = Messages.query.filter(
+            Messages.sender_id == friend.custom_id,
+            Messages.receiver_id == current_user.custom_id,
+            Messages.is_read == False
+        ).count()
+
+        # Get last message between users
+        last_message = Messages.query.filter(
+            ((Messages.sender_id == current_user.custom_id) & 
+            (Messages.receiver_id == friend.custom_id)) |
+            ((Messages.sender_id == friend.custom_id) & 
+            (Messages.receiver_id == current_user.custom_id))
+        ).order_by(Messages.timestamp.desc()).first()
+
+        friend_data.append({
+            "custom_id": friend.custom_id,
+            "username": friend.username,
+            "profile_picture": friend.profile_picture,
+            "last_seen": friend.last_seen.strftime('%H:%M') if friend.last_seen else '',
+            "is_online": friend.is_online,
+            "unread_count": unread_count,
+            "last_message":{
+            'text': last_message.message_text if last_message else None,
+            'time': last_message.timestamp.strftime('%H:%M') if last_message else None
+                }
             })
+
+
+    # Sort friends by unread count (descending) and online status
+    friend_data.sort(key=lambda x: (-x['unread_count'], -x['is_online']))
+    
     return jsonify(friend_data), 200
