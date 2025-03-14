@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - TomChat</title>
+    
+    <!-- External Dependencies -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@2.3.0/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.1.0"></script>
+
+    <style>
+        /* Consolidated Styles */
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Arial, sans-serif; }
+        .container-fluid { padding: 0; }
+        .sidebar { width: 250px; height: 100vh; position: fixed; background: #2c3e50; color: white; transition: 0.3s; }
+        .sidebar-header { padding: 20px; background: #34495e; }
+        .sidebar-menu { list-style: none; padding: 0; }
+        .sidebar-menu li { padding: 10px 20px; }
+        .sidebar-menu li a { color: #bdc3c7; text-decoration: none; }
+        .sidebar-menu li:hover { background: #34495e; }
+        .main-content { margin-left: 250px; padding: 20px; }
+        .card { border: none; border-radius: 10px; box-shadow: 0 2px 15px rgba(0,0,0,0.1); }
+        .chart-container { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .table { background: white; border-radius: 8px; overflow: hidden; }
+        th { background: #34495e!important; color: white!important; }
+        .table-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .pagination {
+            margin-top: 20px;
+        }
+
+        .page-link {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>TomChat Analytics</h3>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#"><i class="fas fa-home mr-2"></i>Dashboard</a></li>
+            <li><a href="#users"><i class="fas fa-users mr-2"></i>User Analytics</a></li>
+            <li><a href="#messages"><i class="fas fa-comments mr-2"></i>Message Analytics</a></li>
+            <li><a href="#groups"><i class="fas fa-users-cog mr-2"></i>Group Analytics</a></li>
+            <li><a href="#settings"><i class="fas fa-cog mr-2"></i>Settings</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white p-3">
+                    <h5>Total Users</h5>
+                    <h2 id="total-users">0</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white p-3">
+                    <h5>Online Users</h5>
+                    <h2 id="online-users-count">0</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white p-3">
+                    <h5>Messages Today</h5>
+                    <h2 id="daily-messages">0</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-danger text-white p-3">
+                    <h5>Active Groups</h5>
+                    <h2 id="active-groups">0</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="row">
+            <div class="col-md-8">
+                <div class="chart-container">
+                    <canvas id="mainChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="chart-container">
+                    <canvas id="onlineTimeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <canvas id="messageActivityChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <canvas id="userActivityHeatmap"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4" id="tablesSection" style="display: none;">
+          <!-- Search Input -->
+          <div class="col-12 mb-3">
+              <div class="input-group">
+                  <input type="text" id="searchInput" class="form-control" placeholder="Search...">
+                  <div class="input-group-append">
+                      <button class="btn btn-outline-secondary" type="button" id="searchButton">
+                          <i class="fas fa-search"></i>
+                      </button>
+                  </div>
+              </div>
+          </div>
+      
+          <!-- Tables -->
+          <div class="col-12">
+              <div id="usersTable" class="table-section">
+                  <table class="table table-striped">
+                      <thead>
+                          <tr>
+                              <th>Username</th>
+                              <th>Status</th>
+                              <th>Last Seen</th>
+                              <th>Actions</th>
+                          </tr>
+                      </thead>
+                      <tbody id="usersTableBody"></tbody>
+                  </table>
+                  <nav>
+                      <ul class="pagination justify-content-center" id="usersPagination"></ul>
+                  </nav>
+              </div>
+      
+              <div id="messagesTable" class="table-section" style="display: none;">
+                  <table class="table table-striped">
+                      <thead>
+                          <tr>
+                              <th>Sender</th>
+                              <th>Receiver</th>
+                              <th>Message</th>
+                              <th>Timestamp</th>
+                          </tr>
+                      </thead>
+                      <tbody id="messagesTableBody"></tbody>
+                  </table>
+                  <nav>
+                      <ul class="pagination justify-content-center" id="messagesPagination"></ul>
+                  </nav>
+              </div>
+      
+              <div id="groupsTable" class="table-section" style="display: none;">
+                  <table class="table table-striped">
+                      <thead>
+                          <tr>
+                              <th>Group Name</th>
+                              <th>Created By</th>
+                              <th>Created At</th>
+                              <th>Actions</th>
+                          </tr>
+                      </thead>
+                      <tbody id="groupsTableBody"></tbody>
+                  </table>
+                  <nav>
+                      <ul class="pagination justify-content-center" id="groupsPagination"></ul>
+                  </nav>
+              </div>
+
+              <!-- Add Settings Table -->
+            <div id="settingsTable" class="table-section" style="display: none;">
+              <table class="table table-striped">
+                  <thead>
+                      <tr>
+                          <th>Key</th>
+                          <th>Value</th>
+                          <th>Description</th>
+                          <th>Last Modified</th>
+                          <th>Actions</th>
+                      </tr>
+                  </thead>
+                  <tbody id="settingsTableBody"></tbody>
+              </table>
+              <nav>
+                  <ul class="pagination justify-content-center" id="settingsPagination"></ul>
+              </nav>
+            </div>
+          </div>
+      </div>
+        <!-- Data Tables -->
+        <!-- ... (Tables remain similar to previous versions) ... -->
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+    const socket = io('/admin');
+    let charts = {
+        main: null,
+        onlineTime: null,
+        messageActivity: null,
+        heatmap: null
+    };
+
+    // Destroy existing charts before reinitializing
+    function destroyCharts() {
+        Object.values(charts).forEach(chart => {
+            if (chart) chart.destroy();
+        });
+    }
+
+        function initializeCharts() {
+            // Main Statistics Chart
+            charts.main = new Chart(document.getElementById('mainChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Users', 'Online', 'Messages', 'Groups'],
+                    datasets: [{
+                        label: 'System Statistics',
+                        data: [0, 0, 0, 0],
+                        backgroundColor: ['#3498db', '#2ecc71', '#f1c40f', '#e74c3c']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Online Time Distribution
+            charts.onlineTime = new Chart(document.getElementById('onlineTimeChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+                    datasets: [{
+                        label: 'Online Users by Time',
+                        data: [],
+                        borderColor: '#9b59b6',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Message Activity Chart
+            charts.messageActivity = new Chart(document.getElementById('messageActivityChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Messages per Hour',
+                        data: [],
+                        borderColor: '#e67e22',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'hour'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // User Activity Heatmap
+            charts.heatmap = new Chart(document.getElementById('userActivityHeatmap').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'User Activity by Day',
+                        data: [],
+                        backgroundColor: ['#3498db', '#2ecc71', '#f1c40f', '#e74c3c', '#9b59b6', '#34495e', '#e67e22']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function updateCharts(data) {
+        // Main Chart
+        charts.main.data.datasets[0].data = [
+            data.total_users,
+            data.online_users_count,
+            data.total_messages,
+            data.total_groups
+        ];
+        charts.main.update();
+
+        // Online Time Distribution
+        charts.onlineTime.data.datasets[0].data = data.online_time_distribution;
+        charts.onlineTime.update();
+
+        // Message Activity
+        if (data.message_activity) {
+            charts.messageActivity.data.labels = data.message_activity.map(a => a.hour);
+            charts.messageActivity.data.datasets[0].data = data.message_activity.map(a => a.count);
+            charts.messageActivity.update();
+        }
+
+        // User Activity Heatmap
+        charts.heatmap.data.datasets[0].data = data.user_activity_heatmap;
+        charts.heatmap.update();
+
+        // Update statistics cards
+        document.getElementById('total-users').textContent = data.total_users;
+        document.getElementById('online-users-count').textContent = data.online_users_count;
+        document.getElementById('daily-messages').textContent = data.daily_messages;
+        document.getElementById('active-groups').textContent = data.active_groups;
+    }
+        async function loadAllData() {
+            try {
+                const res = await fetch('/admin/initial_data');
+                const data = await res.json();
+                updateCharts(data);
+            } catch (error) {
+                console.error('Initial load error:', error);
+            }
+        }
+       
+    // function setupSocketListeners() {
+    //     socket.on('update_dashboard', data => {
+    //         updateCharts(data);
+    //     });
+    // }
+
+    // async function loadAllData() {
+    //     try {
+    //         const res = await fetch('/admin/initial_data');
+    //         const data = await res.json();
+    //         updateCharts(data);
+    //     } catch (error) {
+    //         console.error('Initial load error:', error);
+    //     }
+    // }
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            destroyCharts();
+            initializeCharts();
+            loadAllData();
+            setupSocketListeners()
+        }, 250);
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        initializeCharts();
+        loadAllData();
+        setupSocketListeners();  // Now properly defined
+    });
+
+let currentSection = '#';
+let currentPage = {
+    users: 1,
+    messages: 1,
+    groups: 1,
+    dashboard:1
+};
+let searchQuery = '';
+const validSections = ['users', 'messages', 'groups', 'settings',"dashboard"];
+// Add to setupSocketListeners
+function setupSocketListeners() {
+    socket.on('update_dashboard', data => {
+        if (document.getElementById('tablesSection').style.display === 'none') {
+            updateCharts(data);
+        }
+    });
+}
+setupSocketListeners()
+
+// Add these new functions
+function showSection(section) {
+    currentSection = section;
+    
+    // Safely hide all table sections
+    document.querySelectorAll('.table-section').forEach(el => {
+        if (el) el.style.display = 'none';
+    });
+
+    // Safely show selected table
+    const activeTable = document.getElementById(`${section}Table`);
+    if (activeTable) {
+        activeTable.style.display = 'block';
+    }
+
+    // Safely show tables container
+    const tablesSection = document.getElementById('tablesSection');
+    if (tablesSection) {
+        tablesSection.style.display = 'block';
+    }
+
+    // Safely hide charts
+    const chartContainers = document.querySelectorAll('.chart-container');
+    if (chartContainers) {
+        chartContainers.forEach(chart => {
+            if (chart) chart.style.display = 'none';
+        });
+    }
+
+    loadTableData(section);
+}
+
+async function loadTableData(section, page = 1, search = '') {
+    try {
+        const res = await fetch(`/admin/get_${section}?page=${page}&query=${search}`);
+        const data = await res.json();
+        renderTable(section, data);
+        setupPagination(section, data);
+    } catch (error) {
+        console.error(`Error loading ${section}:`, error);
+    }
+}
+
+function renderTable(section, data) {
+    const tbody = document.getElementById(`${section}TableBody`);
+    tbody.innerHTML = '';
+
+    data[section].forEach(item => {
+        const row = document.createElement('tr');
+        // Customize based on your data structure
+        if (section === 'users') {
+            row.innerHTML = `
+                <td>${item.username}</td>
+                <td>${item.is_online ? 'Online' : 'Offline'}</td>
+                <td>${item.last_seen || 'Never'}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary">Edit</button>
+                    <button class="btn btn-sm btn-danger">Delete</button>
+                </td>
+            `;
+        } else if (section === 'messages') {
+            row.innerHTML = `
+                <td>${item.sender_id}</td>
+                <td>${item.receiver_id}</td>
+                <td>${item.message_text.substring(0, 30)}...</td>
+                <td>${item.timestamp}</td>
+            `;
+        } else if (section === 'groups') {
+            row.innerHTML = `
+                <td>${item.group_name}</td>
+                <td>${item.created_by}</td>
+                <td>${item.created_at}</td>
+                <td>
+                    <button class="btn btn-sm btn-info">View</button>
+                    <button class="btn btn-sm btn-warning">Edit</button>
+                </td>
+            `;
+        }else if (section == 'settings'){
+            row.innerHTML = `
+                <td>${item.key}</td>
+                <td>${item.value}</td>
+                <td>${item.description || ''}</td>
+                <td>${item.last_modified}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary" onclick="editSetting('${item.id}')">Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteSetting('${item.id}')">Delete</button>
+                </td>
+            `;
+        }
+        tbody.appendChild(row);
+    });
+}
+
+function setupPagination(section, data) {
+    const pagination = document.getElementById(`${section}Pagination`);
+    pagination.innerHTML = '';
+
+    const prevDisabled = data.current_page === 1 ? 'disabled' : '';
+    const nextDisabled = data.current_page === data.total_pages ? 'disabled' : '';
+
+    pagination.innerHTML = `
+        <li class="page-item ${prevDisabled}">
+            <button class="page-link" onclick="changePage(${data.current_page - 1})">Previous</button>
+        </li>
+        <li class="page-item active">
+            <span class="page-link">${data.current_page}</span>
+        </li>
+        <li class="page-item ${nextDisabled}">
+            <button class="page-link" onclick="changePage(${data.current_page + 1})">Next</button>
+        </li>
+    `;
+}
+
+function changePage(newPage) {
+    currentPage[currentSection] = newPage;
+    loadTableData(currentSection, newPage, searchQuery);
+    setupSocketListeners()
+}
+
+// Add event listeners to sidebar
+document.querySelectorAll('.sidebar-menu li').forEach((item, index) => {
+    if (index > 0) {  // Skip dashboard item
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const section = item.querySelector('a').getAttribute('href').replace('#', '');
+            showSection(section);
+        });
+    }
+});
+
+// Add search functionality
+document.getElementById('searchButton').addEventListener('click', () => {
+    searchQuery = document.getElementById('searchInput').value;
+    currentPage[currentSection] = 1;
+    loadTableData(currentSection, 1, searchQuery);
+});
+
+// Add debounced search input
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        searchQuery = e.target.value;
+        currentPage[currentSection] = 1;
+        loadTableData(currentSection, 1, searchQuery);
+    }, 500);
+});
+// function renderTable(section, data) {
+//     const tbody = document.getElementById(`${section}TableBody`);
+//     tbody.innerHTML = '';
+
+//     data[section].forEach(item => {
+//         const row = document.createElement('tr');
+//         if (section === 'settings') {
+//             row.innerHTML = `
+//                 <td>${item.key}</td>
+//                 <td>${item.value}</td>
+//                 <td>${item.description || ''}</td>
+//                 <td>${item.last_modified}</td>
+//                 <td>
+//                     <button class="btn btn-sm btn-primary" onclick="editSetting('${item.id}')">Edit</button>
+//                     <button class="btn btn-sm btn-danger" onclick="deleteSetting('${item.id}')">Delete</button>
+//                 </td>
+//             `;
+//         }
+//         else{
+//           row.innerHTML = `
+//                 <td>${item.key}</td>
+//                 <td>${item.value}</td>
+//                 <td>${item.description || ''}</td>
+//                 <td>${item.last_modified}</td>
+//                 <td>
+//                     <button class="btn btn-sm btn-primary" onclick="editSetting('${item.id}')">Edit</button>
+//                     <button class="btn btn-sm btn-danger" onclick="deleteSetting('${item.id}')">Delete</button>
+//                 </td>
+//             `;
+//         }
+//         // ... existing cases ...
+//         tbody.appendChild(row);
+//     });
+// }
+
+// Add edit/delete functions
+function editSetting(id) {
+    // Implement edit functionality
+    console.log('Editing setting:', id);
+}
+
+function deleteSetting(id) {
+    if (confirm('Are you sure you want to delete this setting?')) {
+        fetch(`/admin/delete_setting/${id}`, { method: 'DELETE' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadTableData(currentSection);
+                }
+            });
+    }
+}
+    </script>
+</body>
+</html>
