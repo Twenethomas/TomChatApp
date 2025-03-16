@@ -11,7 +11,10 @@ app.config.from_object(Config)
 
 # Initialize extensions
 db.init_app(app)
-socketio.init_app(app, cors_allowed_origins="*")
+# Update Socket.IO initialization
+socketio.init_app(app, 
+                cors_allowed_origins=[os.environ.get('RENDER_EXTERNAL_URL')], 
+                async_mode='eventlet')
 migrate = Migrate(app, db)
 login_manager.init_app(app)
 login_manager.login_view = 'user.login'
