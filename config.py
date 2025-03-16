@@ -1,7 +1,7 @@
 import os
 
 class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY", "your_secret_key_here")
+    SECRET_KEY = os.getenv("SECRET_KEY")
     
     # Ensure DATABASE_URL is set in Render's Environment Variables.
     # Append "?sslmode=require" to enforce SSL for remote PostgreSQL.
