@@ -68,12 +68,15 @@ def register():
 @user_bp.route('/logout', methods=['POST'])
 @login_required
 def logout():
-    logout_user()
-    user= Users.query.filter_by(is_online=True)
-    session.pop('user_id', None)  # ✅ Clear session
-    emit('update_status', {'user_id': user.custom_id, 'status': 'offline'}, room=user.custom_id)  
-    
-    return jsonify({'success': True, 'message': 'Logout successful'}), 200
+    user = Users.query.filter_by(custom_id=current_user.custom_id).first()
+    if user:
+        logout_user()
+        session.pop('user_id', None)
+        emit('update_status', {
+            'user_id': str(user.custom_id),  # Convert to string
+            'status': 'offline'
+        }, room=str(user.custom_id))  # Convert to string
+    return jsonify({'success': True}), 200
 
 @user_bp.route('/api/friend_request', methods=['POST'])
 @login_required
