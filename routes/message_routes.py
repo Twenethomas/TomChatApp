@@ -15,9 +15,12 @@ def handle_connect():
         if user:
             user.is_online = True
             db.session.commit()
-            join_room(user.custom_id)
-            emit('update_status', {'user_id': user.custom_id, 'status': 'online'}, room=current_user.custom_id)
-
+            join_room(str(user.custom_id))  # Convert UUID to string
+            emit('update_status', {
+                'user_id': str(user.custom_id),  # Convert to string
+                'status': 'online'
+            }, broadcast=True)
+            
 @socketio.on('disconnect')
 def handle_disconnect():
     if current_user.is_authenticated:
@@ -46,21 +49,14 @@ def send_message():
     db.session.add(new_message)
     db.session.commit()
     sender= Users.query.filter_by(custom_id = current_user.custom_id).first()
-    socketio.emit('receive_message', {
-        'sender_id': current_user.custom_id,
-        'receiver_id': receiver_id,
-        'message_text': message_text,
-        'sender_name': sender.username,
-        'timestamp': new_message.timestamp.strftime('%H:%M')
+   
+    @socketio.emit('receive_message', {
+    'sender_id': str(current_user.custom_id),  # Convert to string
+    'receiver_id': receiver_id,
+    'message_text': message_text,
+    'sender_name': sender.username,
+    'timestamp': new_message.timestamp.strftime('%H:%M')
     }, room=receiver_id)
-    # Also emit to sender's room to update their UI
-    socketio.emit('receive_message', {
-        'sender_id': current_user.custom_id,
-        'receiver_id': receiver_id,
-        'message_text': message_text,
-        'sender_name': sender.username,
-        'timestamp': new_message.timestamp.strftime('%H:%M')
-    }, room=current_user.custom_id)
 
     return jsonify({'success': True, 'message': 'Message sent successfully'}), 201
 
