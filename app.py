@@ -5,6 +5,7 @@ from flask_login import LoginManager, current_user
 from config import Config
 from extensions import db, socketio, login_manager
 from datetime import datetime
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -18,6 +19,8 @@ socketio.init_app(app,
 migrate = Migrate(app, db)
 login_manager.init_app(app)
 login_manager.login_view = 'user.login'
+
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
 # Register Blueprints
 from models import Users
