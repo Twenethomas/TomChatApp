@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 from flask_login import UserMixin
+from sqlalchemy import text
 from extensions import db
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -64,7 +65,8 @@ class FriendRequest(db.Model):
 
 
 class Settings(db.Model):
-    custom_id = db.Column(db.String(50), primary_key=True, default=lambda: str(uuid.uuid4()))
+    __tablename__ = 'settings'
+    custom_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # ✅ Changed to UUID
     key = db.Column(db.String(100), unique=True, nullable=False)
     value = db.Column(db.String(500), nullable=False)
     description = db.Column(db.Text)
@@ -182,9 +184,3 @@ def create_database_triggers():
         END;
         """))
 
-# ----------------------
-# Execute After Database Creation
-# ----------------------
-@event.listens_for(db.metadata, "after_create")
-def after_create(target, connection, **kw):
-    create_database_triggers()
