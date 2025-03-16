@@ -1,7 +1,8 @@
-// Replace with dynamic URL based on environment
 const socket = io.connect(window.location.origin, {
   withCredentials: true,
-  secure: true // Force HTTPS
+  secure: true, // Force HTTPS/WSS
+  reconnection: true,
+  reconnectionAttempts: 5
 });
 
 // ----- Sidebar & Tab Functions -----
@@ -250,6 +251,7 @@ socket.on("update_status", (data) => {
 });
 
 socket.on("receive_message", data => {
+    if (!data.sender_id || !data.receiver_id) return;
     const currentChatId = document.getElementById("chat-header-name")?.dataset.receiverId;
     const isCurrentChat = data.sender_id === currentChatId;
     
@@ -426,7 +428,7 @@ socket.on("profile_updated", (data) => {
     // ✅ Update current user profile if it matches
     if (currentUser.custom_id === data.user_id) {
         currentUser.username = data.username;
-        currentUser.profile_picture = "/" + data.profile_picture; // Ensure proper path
+        currentUser.profile_picture = new URL(data.profile_picture, window.location.origin).href; // Ensure proper path
         document.getElementById("profile-preview").src = currentUser.profile_picture;
         document.getElementById("profile-username").value = currentUser.username;
     }
@@ -504,8 +506,10 @@ function previewProfileImage() {
     .then(data => {
         if (data.success) {
             // Disconnect Socket.IO
-            if (socket) socket.disconnect()
-            // Redirect to login
+            if (socket) {
+              socket.removeAllListener();
+              socket.disconnect();
+                        }// Redirect to login
             window.location.href = "/"
         }
     })
@@ -516,3 +520,13 @@ function previewProfileImage() {
 }
 // Preview Image Before Upload
 
+socket.on("connect_error", (err) => {
+    console.error("Connection error:", err);
+    setTimeout(() => socket.connect(), 5000);
+});
+
+socket.on("disconnect", (reason) => {
+    if (reason === "io server disconnect") {
+        socket.connect();
+    }
+});
