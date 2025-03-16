@@ -1,29 +1,23 @@
 import os
 from flask import Flask, render_template
 from flask_migrate import Migrate
-from flask_login import LoginManager, current_user
+from flask_login import current_user
 from config import Config
 from extensions import db, socketio, login_manager
 from datetime import datetime
-from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
 # Initialize extensions
 db.init_app(app)
-# Update Socket.IO initialization
-socketio.init_app(app, 
-                cors_allowed_origins=[os.environ.get('RENDER_EXTERNAL_URL')], 
-                async_mode='eventlet')
+socketio.init_app(app, cors_allowed_origins="*")
 migrate = Migrate(app, db)
 login_manager.init_app(app)
 login_manager.login_view = 'user.login'
 
-app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
-
 # Register Blueprints
-from models import Users
+from models import Users  # Needed for user_loader
 from routes.user_routes import user_bp
 from routes.message_routes import message_bp
 from routes.contact_routes import contact_bp
@@ -48,10 +42,10 @@ def update_last_seen():
 
 @login_manager.user_loader
 def load_user(user_id):
-    return Users.query.filter_by(custom_id=user_id).first()  # ✅ Load user by custom_id
-
+    # Load user using the UUID string
+    from models import Users
+    return Users.query.filter_by(custom_id=user_id).first()
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        socketio.run(app, host="0.0.0.0", port=5432, debug=True)
+    port = int(os.environ.get("PORT", 1000))
+    socketio.run(app, host="0.0.0.0", port=port, debug=True)
