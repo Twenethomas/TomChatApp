@@ -47,4 +47,4 @@ def load_user(user_id):
 
 if __name__ == '__main__':
     with app.app_context():
-        socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+        socketio.run(app, host="0.0.0.0", port=5432, debug=True)
