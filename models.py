@@ -79,108 +79,138 @@ def create_database_triggers():
     with db.engine.connect() as connection:
         # Delete orphaned contacts when a user is deleted
         connection.execute(text("""
-        CREATE OR ALTER TRIGGER delete_user_contacts
-        ON users
-        AFTER DELETE
-        AS
+        CREATE OR REPLACE FUNCTION delete_user_contacts()
+        RETURNS TRIGGER AS $$
         BEGIN
             DELETE FROM contacts 
-            WHERE user_id IN (SELECT custom_id FROM deleted)
-               OR contact_user_id IN (SELECT custom_id FROM deleted);
+            WHERE user_id IN (SELECT custom_id FROM OLD)
+               OR contact_user_id IN (SELECT custom_id FROM OLD);
+            RETURN OLD;
         END;
+        $$ LANGUAGE plpgsql;
+
+        CREATE TRIGGER delete_user_contacts_trigger
+        AFTER DELETE ON users
+        FOR EACH ROW
+        EXECUTE FUNCTION delete_user_contacts();
         """))
         
         # Delete orphaned messages when a user is deleted
         connection.execute(text("""
-        CREATE OR ALTER TRIGGER delete_user_messages
-        ON users
-        AFTER DELETE
-        AS
+        CREATE OR REPLACE FUNCTION delete_user_messages()
+        RETURNS TRIGGER AS $$
         BEGIN
             DELETE FROM messages 
-            WHERE sender_id IN (SELECT custom_id FROM deleted)
-               OR receiver_id IN (SELECT custom_id FROM deleted);
+            WHERE sender_id IN (SELECT custom_id FROM OLD)
+               OR receiver_id IN (SELECT custom_id FROM OLD);
+            RETURN OLD;
         END;
+        $$ LANGUAGE plpgsql;
+
+        CREATE TRIGGER delete_user_messages_trigger
+        AFTER DELETE ON users
+        FOR EACH ROW
+        EXECUTE FUNCTION delete_user_messages();
         """))
         
         # Delete orphaned friend requests when a user is deleted
         connection.execute(text("""
-        CREATE OR ALTER TRIGGER delete_user_friend_requests
-        ON users
-        AFTER DELETE
-        AS
+        CREATE OR REPLACE FUNCTION delete_user_friend_requests()
+        RETURNS TRIGGER AS $$
         BEGIN
             DELETE FROM friendrequest 
-            WHERE sender_id IN (SELECT custom_id FROM deleted)
-               OR receiver_id IN (SELECT custom_id FROM deleted);
+            WHERE sender_id IN (SELECT custom_id FROM OLD)
+               OR receiver_id IN (SELECT custom_id FROM OLD);
+            RETURN OLD;
         END;
+        $$ LANGUAGE plpgsql;
+
+        CREATE TRIGGER delete_user_friend_requests_trigger
+        AFTER DELETE ON users
+        FOR EACH ROW
+        EXECUTE FUNCTION delete_user_friend_requests();
         """))
         
-        # Existing triggers (prevent admin/group/message deletion)
+        # Prevent admin deletion
         connection.execute(text("""
-        CREATE OR ALTER TRIGGER prevent_admin_delete
-        ON users
-        INSTEAD OF DELETE
-        AS
+        CREATE OR REPLACE FUNCTION prevent_admin_delete()
+        RETURNS TRIGGER AS $$
         BEGIN
-            IF EXISTS (SELECT 1 FROM deleted WHERE is_admin = 1)
-            BEGIN
-                RAISERROR('Admins cannot be deleted.', 16, 1);
-                ROLLBACK TRANSACTION;
-                RETURN;
-            END
-            DELETE FROM users WHERE custom_id IN (SELECT custom_id FROM deleted);
+            IF EXISTS (SELECT 1 FROM OLD WHERE is_admin = TRUE) THEN
+                RAISE EXCEPTION 'Admins cannot be deleted.';
+            END IF;
+            RETURN OLD;
         END;
+        $$ LANGUAGE plpgsql;
+
+        CREATE TRIGGER prevent_admin_delete_trigger
+        BEFORE DELETE ON users
+        FOR EACH ROW
+        EXECUTE FUNCTION prevent_admin_delete();
         """))
         
+        # Prevent group deletion if it has members
         connection.execute(text("""
-        CREATE OR ALTER TRIGGER prevent_group_delete
-        ON groups
-        INSTEAD OF DELETE
-        AS
+        CREATE OR REPLACE FUNCTION prevent_group_delete()
+        RETURNS TRIGGER AS $$
         BEGIN
-            IF EXISTS (SELECT 1 FROM deleted d JOIN groupmembers gm ON d.custom_id = gm.group_id)
-            BEGIN
-                RAISERROR('Groups with members cannot be deleted.', 16, 1);
-                ROLLBACK TRANSACTION;
-                RETURN;
-            END
-            DELETE FROM groups WHERE custom_id IN (SELECT custom_id FROM deleted);
+            IF EXISTS (SELECT 1 FROM groupmembers WHERE group_id = OLD.custom_id) THEN
+                RAISE EXCEPTION 'Groups with members cannot be deleted.';
+            END IF;
+            RETURN OLD;
         END;
+        $$ LANGUAGE plpgsql;
+
+        CREATE TRIGGER prevent_group_delete_trigger
+        BEFORE DELETE ON groups
+        FOR EACH ROW
+        EXECUTE FUNCTION prevent_group_delete();
         """))
         
+        # Prevent blocked message deletion
         connection.execute(text("""
-        CREATE OR ALTER TRIGGER prevent_blocked_message_delete
-        ON messages
-        INSTEAD OF DELETE
-        AS
+        CREATE OR REPLACE FUNCTION prevent_blocked_message_delete()
+        RETURNS TRIGGER AS $$
         BEGIN
-            IF EXISTS (SELECT 1 FROM deleted d JOIN users u ON d.sender_id = u.custom_id WHERE u.is_blocked = 1)
-            BEGIN
-                RAISERROR('Blocked users’ messages cannot be deleted.', 16, 1);
-                ROLLBACK TRANSACTION;
-                RETURN;
-            END
-            DELETE FROM messages WHERE custom_id IN (SELECT custom_id FROM deleted);
+            IF EXISTS (SELECT 1 FROM users WHERE custom_id = OLD.sender_id AND is_blocked = TRUE) THEN
+                RAISE EXCEPTION 'Blocked users’ messages cannot be deleted.';
+            END IF;
+            RETURN OLD;
         END;
-        """))
-        
-        # Stored Procedures
-        connection.execute(text("""
-        CREATE OR ALTER PROCEDURE BlockUser @userID VARCHAR(50)
-        AS
-        BEGIN
-            UPDATE users SET is_blocked = 1 WHERE custom_id = @userID;
-        END;
-        """))
-        
-        connection.execute(text("""
-        CREATE OR ALTER PROCEDURE GetUserGroups @userID VARCHAR(50)
-        AS
-        BEGIN
-            SELECT g.* FROM groups g
-            JOIN groupmembers gm ON g.custom_id = gm.group_id
-            WHERE gm.user_id = @userID;
-        END;
+        $$ LANGUAGE plpgsql;
+
+        CREATE TRIGGER prevent_blocked_message_delete_trigger
+        BEFORE DELETE ON messages
+        FOR EACH ROW
+        EXECUTE FUNCTION prevent_blocked_message_delete();
         """))
 
+def create_database_procedures():
+    with db.engine.connect() as connection:
+        # Block a user
+        connection.execute(text("""
+        CREATE OR REPLACE FUNCTION block_user(user_id UUID)
+        RETURNS VOID AS $$
+        BEGIN
+            UPDATE users SET is_blocked = TRUE WHERE custom_id = user_id;
+        END;
+        $$ LANGUAGE plpgsql;
+        """))
+        
+        # Get user groups
+        connection.execute(text("""
+        CREATE OR REPLACE FUNCTION get_user_groups(user_id UUID)
+        RETURNS TABLE (
+            custom_id UUID,
+            group_name VARCHAR(100),
+            created_by UUID,
+            created_at TIMESTAMP
+        ) AS $$
+        BEGIN
+            RETURN QUERY
+            SELECT g.* FROM groups g
+            JOIN groupmembers gm ON g.custom_id = gm.group_id
+            WHERE gm.user_id = user_id;
+        END;
+        $$ LANGUAGE plpgsql;
+        """))
