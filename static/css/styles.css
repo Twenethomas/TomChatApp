@@ -1,63 +1,66 @@
-/* ✅ General Styles - WhatsApp Theme */
+/* ✅ WhatsApp Light Mode Theme */
+
+/* General Styles */
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
-    padding: 0;
-    background-color: #e0e0e0; /* WhatsApp background color */
-    color: #333;
-    overflow: hidden; /* Prevent scrollbars on body */
+    padding: 1%;
+    background-color: #f8f9fa;
+    color: #222;
+    overflow: hidden;
 }
 
-/* ✅ Chat Container */
+/* Chat Container */
 .chat-container {
     display: flex;
-    height: 100vh;
-    max-width: 1000px;
+    height: 95vh;
+    max-width: 1200px;
     margin: auto;
-    background-color: #ffffff; /* White container background */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.08); /* Subtle shadow */
-    border-radius: 0; /* Square corners for WhatsApp feel */
-    overflow: hidden; /* Clip inner content to border-radius */
+    background-color: #fff;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+    border-radius: 0;
+    overflow: hidden;
 }
 
-/* ✅ Sidebar */
+/* Sidebar */
 .sidebar {
-    width: 30%; /* Slightly wider sidebar for WhatsApp */
-    background-color: #f0f0f0; /* Light grey sidebar background */
-    border-right: 1px solid #e0e0e0;
+    width: 35%;
+    background-color: #f0f2f5;
+    border-right: 1px solid #ddd;
     display: flex;
     flex-direction: column;
     transition: width 0.3s ease;
     position: relative;
-    overflow-y: auto; /* Enable vertical scroll for long chat lists */
-    height: 100%; /* Ensure sidebar takes full height */
+    overflow-y: auto;
+    height: 100%;
 }
 
-/* ✅ Sidebar Header */
+/* Sidebar Header */
 .sidebar-header {
     padding: 15px;
-    background-color: #f0f0f0; /* Match sidebar background */
-    color: #333; /* Dark text for header */
+    background-color: #ededed;
+    color: #333;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #e0e0e0; /* Separator line */
+    border-bottom: 1px solid #ddd;
 }
 
 .sidebar-title {
-    display: block; /* Show title by default now */
-    font-size: 19px; /* Slightly larger title */
-    font-weight: 500; /* Medium weight title */
-    color: #333; /* Dark title color */
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #333;
+    margin-right: 10px;
 }
 
 .add-friend-button {
     background: none;
     border: none;
-    color: #6c63ff; /* Keep your theme color for button */
-    font-size: 24px; /* Larger plus icon */
+    color: #919191;
+    font-size: 1.5rem;
     cursor: pointer;
-    opacity: 0.8; /* Slightly desaturated icon */
+    opacity: 0.8;
     transition: opacity 0.2s;
 }
 
@@ -65,110 +68,115 @@ body {
     opacity: 1;
 }
 
-/* ✅ Search Bar */
+/* Search Bar */
 .search-bar {
-    padding: 10px 15px; /* More padding left/right */
-    border-bottom: 1px solid #e0e0e0;
-    display: flex; /* Keep search bar visible */
-    width: 90%;
+    padding: 10px 15px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    width: calc(100% - 30px);
     align-self: center;
 }
 
 .sidebar.expanded .search-bar {
-    display: flex; /* Ensure it's flex in expanded state too if you use expansion */
+    display: flex;
 }
 
 .search-bar input {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #e0e0e0;
-    border-radius: 20px; /* Rounded search bar */
-    font-size: 15px; /* Slightly larger input text */
-    background-color: #f8f8f8; /* Lighter input background */
-    outline: none; /* Remove default focus outline */
+    padding: 8px 15px;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    background-color: #f6f6f6;
+    outline: none;
 }
 
 .search-bar input:focus {
-    border-color: #d0d0d0; /* Slightly darker border on focus */
-    box-shadow: none; /* Remove default box shadow */
+    box-shadow: none;
 }
 
-/* ✅ Tabs */
+/* Tabs */
 .tabs {
     display: flex;
-    border-bottom: 1px solid #e0e0e0;
-    padding: 0; /* Remove extra padding around tabs */
-    flex-direction: row; /* Horizontal tabs for WhatsApp style */
+    border-bottom: 1px solid #ddd;
+    padding: 0;
+    flex-direction: row;
     align-items: center;
-    justify-content: space-around; /* Distribute tabs evenly */
+    justify-content: space-around;
 }
-
 
 .tab-button {
     flex: 1;
-    padding: 10px; /* Vertical padding for tabs */
+    padding: 10px 0;
     background: none;
     border: none;
-    font-size: 16px; /* Larger tab text */
-    font-weight: 400; /* Lighter font weight */
-    color: #777; /* Grey tab text */
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: #777;
     cursor: pointer;
     transition: color 0.2s, border-bottom 0.2s;
     display: flex;
     align-items: center;
+    gap: 2px;
     justify-content: center;
-    border-bottom: 2px solid transparent; /* Initially transparent border */
+    border-bottom: 3px solid transparent;
 }
 
+.tab-button i {
+    margin-right: 1px;
+}
 
 .tab-button.active {
-    color: #6c63ff; /* WhatsApp blue for active tab, or use your theme #6c63ff; */
-    border-bottom-color: #6c63ff; /* Active tab indicator color */
-    font-weight: 500; /* Slightly bolder for active tab */
+    color: #008069;
+    border-bottom-color: #008069;
+    font-weight: 500;
 }
 
 .tab-button:hover {
-    color: #25d366; /* Hover color same as active, or use your theme #6c63ff; */
+    color: #008069;
 }
 
-/* ✅ Tab Content */
+/* Tab Content */
 .tab-content {
     display: none;
-    padding: 10px 0; /* Reduced padding in tab content */
-    /* Slide animation styles - added here */
+    padding: 10px 0;
     transform: translateX(-100%);
     opacity: 0;
-    transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
     position: relative;
     overflow-x: hidden;
 }
 
 .tab-content.active {
     display: block;
-    /* Slide animation styles - added here */
     transform: translateX(0);
     opacity: 1;
 }
+
 #chat-list {
-    padding: 5px;
-    align-items:start;
-    display: inline;
+    padding: 0;
+    align-items: flex-start;
+    display: block;
 }
+
 /* Friend List Item Styling */
 #chat-list li {
     display: flex;
     align-items: center;
-    padding: 12px;
+    padding: 10px 15px;
     cursor: pointer;
-    transition: background-color 0.3s;
-    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+}
+
+#chat-list li:last-child {
+    border-bottom: none;
 }
 
 #chat-list li:hover {
-    background-color: #f5f5f5;
+    background-color: #f0f0f0;
 }
 
-/* In styles.css */
+/* Chat Details */
 .chat-details {
     flex: 1;
     min-width: 0;
@@ -183,17 +191,17 @@ body {
 
 .chat-name {
     font-weight: 500;
-    font-size: 15px;
-    color: #111;
+    font-size: 1rem;
+    color: #222;
 }
 
 .chat-time {
-    font-size: 12px;
-    color: #666;
+    font-size: 0.75rem;
+    color: #777;
 }
 
 .chat-preview {
-    font-size: 14px;
+    font-size: 0.85rem;
     color: #666;
     white-space: nowrap;
     overflow: hidden;
@@ -204,37 +212,38 @@ body {
 
 /* Unread Badge */
 .unread-badge {
-    background-color: #00a884;
+    background-color: #25d366;
     color: white;
-    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: bold;
     padding: 4px 8px;
-    font-size: 12px;
-    font-weight: 500;
+    border-radius: 50%;
     margin-left: auto;
-    min-width: 20px;
     text-align: center;
 }
 
 /* Online Status Dot */
 .online-dot {
     position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 12px;
-    height: 12px;
-    background-color: #00a884;
+    bottom: 3px;
+    right: 3px;
+    width: 10px;
+    height: 10px;
+    background-color: #4CAF50;
     border: 2px solid white;
     border-radius: 50%;
 }
+
 .chat-list li:hover .chat-name {
-    color: #000; /* Darker name on hover */
+    color: #000;
 }
+
 .last-message {
-    font-size: 14px;
-    color: #666; /* Slightly darker last message text */
-    margin-top: 0; /* Remove extra margin */
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 0;
     transition: color 0.2s ease;
-    overflow: hidden; /* Ensure text ellipsis works */
+    overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -244,48 +253,41 @@ body {
 }
 
 .chat-list li:hover .chat-time {
-    color: #777; /* Slightly darker time on hover */
+    color: #777;
 }
-.chat-header-option{
-    margin-left: 95%;
+
+.chat-header-option {
+    margin-left: auto;
     cursor: pointer;
-}
-/* Unread Badge */
-.unread-badge {
-    background-color: #25d366; /* WhatsApp green for unread badge */
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
-    padding: 4px 8px; /* Adjusted padding */
-    border-radius: 10px; /* More rounded badge */
-    position: absolute;
-    right: 15px;
-    bottom: 15px; /* Adjusted position */
-    transition: transform 0.2s ease;
+    color: #777;
+    font-size: 1.2rem;
 }
 
-.chat-list li:hover .unread-badge {
-    transform: scale(1.05);
+.chat-avatar img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%;
 }
 
-/* ✅ Main Chat Window */
+/* Main Chat Window */
 .main-chat {
-    flex: 2; /* Main chat takes more space */
+    flex: 2;
     display: flex;
     flex-direction: column;
-    background-color: #f8f8f8; /* Very light grey main chat background */
-    border-left: 1px solid #e0e0e0; /* Separator line with sidebar */
+    background-color: #eaeaea;
+    border-left: 1px solid #ddd;
 }
 
-/* ✅ Chat Header */
+/* Chat Header */
 .chat-header {
-    padding: 13px 15px; /* Adjusted header padding */
-    background-color: #f0f0f0; /* Light grey chat header */
+    padding: 10px 15px;
+    background-color: #f0f0f0;
     color: #333;
     display: flex;
     align-items: center;
-    border-bottom: 1px solid #e0e0e0;
-    justify-content: space-between; /* Distribute items in header */
+    border-bottom: 1px solid #ddd;
+    justify-content: space-between;
 }
 
 .chat-header-left {
@@ -298,7 +300,7 @@ body {
     height: 40px;
     border-radius: 50%;
     margin-right: 12px;
-    object-fit: cover; /* Ensure avatar is cropped correctly */
+    object-fit: cover;
 }
 
 .chat-header-details {
@@ -306,16 +308,16 @@ body {
 }
 
 .chat-header-name {
-    font-size: 18px;
+    font-size: 1rem;
     font-weight: 500;
     color: #333;
 }
 
 .chat-header-status {
-    font-size: 13px;
+    font-size: 0.75rem;
     color: #777;
     margin-top: 2px;
-    display: flex; /* Ensure status is flex to align online and typing status */
+    display: flex;
     align-items: center;
 }
 
@@ -324,13 +326,13 @@ body {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: #4CAF50; /* Green for online */
+    background-color: #4CAF50;
     margin-right: 5px;
-    margin-bottom: 1px; /* Align with text baseline */
+    margin-bottom: 1px;
 }
 
 .online-status.offline {
-    background-color: #777; /* Grey for offline */
+    background-color: #777;
 }
 
 .typing-status {
@@ -340,14 +342,14 @@ body {
 
 .chat-header-icons {
     display: flex;
-    gap: 10px; /* Spacing between icons */
+    gap: 10px;
 }
 
 .header-icon-button {
     background: none;
     border: none;
     color: #777;
-    font-size: 20px;
+    font-size: 1.2rem;
     cursor: pointer;
     opacity: 0.7;
     transition: opacity 0.2s;
@@ -357,219 +359,196 @@ body {
     opacity: 1;
 }
 
-
-/* ✅ Chat Messages */
-/* ✅ Chat Messages Container */
+/* Chat Messages */
 .chat-messages {
     display: flex;
     flex-direction: column;
-    padding: 30px 15px; /* Adjusted messages padding */
+    padding: 15px;
     overflow-y: auto;
     height: 100%;
-    padding-bottom: 70px; /* Extra padding at bottom for input visibility */
+    padding-bottom: 70px;
+    background-image: url('path/to/whatsapp-bg.png');
+    background-repeat: repeat;
+    background-size: auto;
 }
 
-/* ✅ Message Box */
+/* Message Box */
 .message {
-    max-width: 70%; /* Slightly wider message bubbles */
-    padding: 10px 12px; /* Adjusted padding inside bubbles */
-    margin: 5px 0; /* Vertical margin only */
-    border-radius: 10px;
-    font-size: 15px; /* Slightly larger message text */
+    max-width: 70%;
+    padding: 8px 12px;
+    margin: 5px 0;
+    border-radius: 7px;
+    font-size: 0.9rem;
     display: flex;
     flex-direction: column;
-    word-wrap: break-word; /* Handle long words */
+    word-wrap: break-word;
 }
 
-/* ✅ Sent Messages (Right Side) */
+/* Sent Messages */
 .sent {
     align-self: flex-end;
-    background-color: #dcf8c6; /* WhatsApp sent message color */
-    color: #333; /* Dark text for sent messages */
-    text-align: left; /* Align text left within sent bubble */
-    border-top-right-radius: 0; /* Keep original border radius */
-    border-bottom-right-radius: 10px; /* Ensure consistent bottom right radius */
-}
-
-/* ✅ Received Messages (Left Side) */
-.received {
-    align-self: flex-start;
-    background-color: #fff; /* White received message background */
-    border: 1px solid #e0e0e0; /* Light border for received messages */
+    background-color: #dcf8c6;
     color: #333;
     text-align: left;
-    border-top-left-radius: 0; /* Keep original border radius */
-    border-bottom-left-radius: 10px; /* Ensure consistent bottom left radius */
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 7px;
 }
 
-/* ✅ Message Timestamp */
+/* Received Messages */
+.received {
+    align-self: flex-start;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    color: #333;
+    text-align: left;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 7px;
+}
+
+/* Message Timestamp */
 .message-timestamp {
-    font-size: 11px; /* Smaller timestamp */
+    font-size: 0.7rem;
     color: #777;
-    margin-top: 3px; /* Reduced margin */
+    margin-top: 3px;
     text-align: right;
 }
 
-
 .message.sent {
-    justify-content: flex-start; /* Align content to start in sent messages for timestamp alignment */
+    justify-content: flex-start;
 }
 
 .message.received {
     justify-content: flex-start;
 }
 
-/* ✅ Chat Input */
+/* Chat Input */
 .chat-input {
-    padding: 15px;
-    background-color: #f0f0f0; /* Light grey input area */
-    border-top: 1px solid #e0e0e0;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-top: 1px solid #ddd;
     display: flex;
     align-items: center;
 }
 
 .chat-input input {
     flex: 1;
-    padding: 12px 15px; /* Adjusted input padding */
-    border: none; /* Remove input border */
-    border-radius: 25px; /* Rounded input field */
+    padding: 10px 15px;
+    border: none;
+    border-radius: 20px;
     margin-right: 10px;
-    font-size: 16px; /* Larger input text */
-    background-color: #fff; /* White input background */
-    outline: none; /* Remove focus outline */
-    box-shadow: inset 0 0 0 1px #e0e0e0; /* Subtle inner border for input */
+    font-size: 0.9rem;
+    background-color: #fff;
+    outline: none;
+    box-shadow: inset 0 0 0 1px #ddd;
 }
 
 .chat-input input:focus {
-    box-shadow: inset 0 0 0 2px #6c63ff; /* Theme color focus highlight on input */
+    box-shadow: inset 0 0 0 2px #008069;
 }
 
 .chat-input button {
-    padding: 12px 20px;
-    background-color: #6c63ff; /* Keep your theme color for send button */
+    padding: 10px 15px;
+    background-color: #008069;
     color: white;
     border: none;
-    border-radius: 25px; /* Rounded send button */
+    border-radius: 20px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 0.9rem;
     font-weight: 500;
     transition: background 0.2s;
-    margin-left: 5px; /* Add some space between input and button */
+    margin-left: 5px;
 }
 
 .chat-input button:hover {
-    background-color: #5a52e0;
+    background-color: #00695c;
 }
 
-/* ✅ Floating Add Chat Button - Consider removing for WhatsApp style, or reposition */
+/* Floating Add Chat Button - Removed for WhatsApp Web Style */
 .floating-button {
-    position: fixed;
-    bottom: 90px; /* Adjusted bottom position */
-    right: 120px;
-    width: 60px;
-    height: 60px;
-    background-color: #25d366; /* WhatsApp floating button green */
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Reduced shadow */
-    transition: background 0.3s;
-    z-index: 999; /* Ensure it's above other content */
+    display: none;
 }
 
-.floating-button:hover {
-    background-color: #128C7E; /* Darker WhatsApp green on hover */
-}
-
-/* ✅ Responsive Design */
+/* Responsive Design */
 @media screen and (max-width: 768px) {
     .chat-container {
-        border-radius: 0; /* Full width on small screens */
-    }
-    .floating-button{
-        right:20px;
+        border-radius: 0;
     }
     .sidebar {
-        width: 30px; /* Collapsed sidebar width */
-        overflow-x: hidden; /* Hide horizontal overflow on collapsed sidebar */
+        width: 100%;
+        z-index: 10;
+        position: absolute;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
     }
-    .sidebar:hover {
-        width: 50%; /* Expand on hover for small screens */
+    .sidebar.active {
+        transform: translateX(0);
     }
+
     .sidebar.expanded {
-        width: 50%; /* Expanded sidebar width on small screens */
+        width: 100%;
     }
     .sidebar.expanded .tabs {
-        flex-direction: row; /* Vertical tabs in collapsed sidebar */
+        flex-direction: row;
     }
     .sidebar.expanded .sidebar-title {
-        display: block; /* Show title in expanded sidebar */
+        display: block;
     }
     .sidebar.expanded .search-bar {
-        display: flex; /* Show search bar in expanded sidebar */
+        display: flex;
     }
     .tabs {
-        flex-direction: column; /* Vertical tabs in collapsed sidebar */
-        align-items: flex-start; /* Align tabs to the start in collapsed sidebar */
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-around;
     }
     .tab-button {
-        justify-content: center; /* Center icons in collapsed tabs */
-        padding-left: 0; /* Remove left padding */
-        text-align: center; /* Center text if any is visible */
-        flex-direction: column; /* Stack icon and text if needed, though text will be hidden */
+        justify-content: center;
+        padding: 10px 0;
+        flex-direction: row;
     }
 
-    /* Hide Tab Text in Collapsed Sidebar */
-    .tab-button span { /* Assuming tab text is in a span, adjust if needed */
-        display: none;
+    .tab-button span {
+        display: block;
+        margin-left: 5px;
     }
-
 
     .tab-content {
-        /* Slide animation styles in responsive design - duplicated here to ensure specificity in media query */
-        transform: translateX(-100%);
-        opacity: 0;
-        transition: transform 0.5s ease-out, opacity 0.5s ease-out;
-        position: relative;
-        overflow-x: hidden;
-    }
-
-    .tab-content.active {
         transform: translateX(0);
         opacity: 1;
+        position: static;
     }
     .chat-list li {
-        padding: 10px; /* Adjust list item padding in collapsed sidebar - reduced horizontal padding */
-        flex-direction: column; /* Stack elements vertically in list item */
-        align-items: center; /* Center items in collapsed list */
-        text-align: center; /* Center text for any visible text within list item */
+        padding: 10px 15px;
+        flex-direction: row;
+        align-items: center;
+        text-align: left;
     }
 
-
     .chat-avatar img {
-        margin-right: 0; /* Remove right margin from avatar in collapsed list */
-        margin-bottom: 5px; /* Add bottom margin to avatar for spacing if needed */
+        margin-right: 10px;
+        margin-bottom: 0;
     }
 
     .chat-header-icons {
-        gap: 5px; /* Reduced gap for better fit in collapsed mode */
+        gap: 10px;
     }
 
     .header-icon-button {
-        font-size: 18px; /* Slightly smaller icons in header for collapsed mode */
+        font-size: 1.2rem;
     }
-
 
     .main-chat {
-        border-left: none; /* Remove left border on main chat in small screens */
+        border-left: none;
+        width: 100%;
     }
+
+    /* You might need a button to toggle the sidebar on small screens */
+    /* Example: */
+    /* .toggle-sidebar-button { ... } */
 }
 
-/* ✅ Modal Backdrop */
+/* Modal Backdrop */
 .modal {
     display: none;
     position: fixed;
@@ -587,11 +566,11 @@ body {
     display: flex;
 }
 
-/* ✅ Modal Content */
+/* Modal Content */
 .modal-content {
     background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     width: 400px;
     max-width: 90%;
     overflow: hidden;
@@ -609,28 +588,28 @@ body {
     }
 }
 
-/* ✅ Modal Header */
+/* Modal Header */
 .modal-header {
-    padding: 16px;
-    background-color: #f0f0f0; /* Light grey modal header */
+    padding: 12px 16px;
+    background-color: #f8f9fa;
     color: #333;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid #eee;
 }
 
 .modal-header h2 {
     margin: 0;
-    font-size: 18px;
-    font-weight: 500; /* Medium weight modal title */
+    font-size: 1.1rem;
+    font-weight: 500;
 }
 
 .modal-header .close {
     background: none;
     border: none;
-    color: #777; /* Grey close icon */
-    font-size: 20px;
+    color: #777;
+    font-size: 1.2rem;
     cursor: pointer;
     transition: opacity 0.2s;
 }
@@ -639,25 +618,25 @@ body {
     opacity: 0.8;
 }
 
-/* ✅ Modal Body */
+/* Modal Body */
 .modal-body {
-    padding: 20px; /* Increased modal body padding */
+    padding: 15px;
 }
 
 .modal-body input {
-    width: 100%;
-    padding: 12px; /* Adjusted input padding in modal */
-    border: 1px solid #e0e0e0;
-    border-radius: 20px; /* Rounded input in modal */
-    font-size: 15px;
-    margin-bottom: 20px; /* Increased margin bottom in modal */
+    width: calc(100% - 24px);
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
     outline: none;
     transition: border-color 0.2s;
-    background-color: #f8f8f8; /* Lighter modal input background */
+    background-color: #fff;
 }
 
 .modal-body input:focus {
-    border-color: #6c63ff; /* Theme color focus in modal input */
+    border-color: #008069;
 }
 
 .modal-body ul {
@@ -669,42 +648,429 @@ body {
 }
 
 .modal-body ul li {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    padding: 12px 15px; /* Adjusted list item padding in modal */
-    border-bottom: 1px solid #f0f0f0;
+    padding: 8px 12px;
+    border-bottom: 1px solid #f8f8f8;
     cursor: pointer;
     transition: background-color 0.2s;
-    border-radius: 10px;
-    width: 95%;
+    border-radius: 5px;
+    width: calc(100% - 24px);
     flex-direction: row;
 }
 
 .modal-body ul li:hover {
-    background-color: #e9e9e9; /* Lighter hover in modal list */
+    background-color: #f0f0f0;
 }
 
 .modal-body ul li img {
-    width: 10%;
-    height: 10%;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
-    margin: 5px;
-    object-fit: cover; /* Ensure modal avatar is cropped */
+    margin-right: 10px;
+    object-fit: cover;
 }
 
 .modal-body ul li .user-details {
-    font-size: 15px;
+    font-size: 0.9rem;
     color: #333;
-    width: 45%;
-    text-align: center;
+    width: calc(100% - 50px);
+    text-align: left;
 }
-.bg-success{
+
+.bg-success {
     background-color: #25d366;
-    border-radius: 10px;
-    padding: 2px;
+    border-radius: 5px;
+    padding: 8px 12px;
     color: #fff;
-    border: 0px;
-    right:10px;
-    height: 40px;
-    width: 100px;
+    border: 0;
+    margin-left: 10px;
+    height: auto;
+    width: auto;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.bg-success:hover {
+    background-color: #128C7E;
+}
+
+.user-details {
+    flex: 1;
+    margin-left: 15px;
+}
+
+.user-name {
+    font-weight: 500;
+    color: #111;
+}
+
+.mutual-friends {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 4px;
+}
+
+.no-mutual {
+    font-size: 0.9em;
+    color: #999;
+    margin-top: 4px;
+}
+
+.tab-content#profile {
+    font-family: sans-serif;
+    padding: 20px;
+    background-color: #f0f0f0;
+}
+
+.tab-content#profile h2 {
+    color: #075E54;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+    font-weight: 600;
+}
+
+.profile-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.profile-img {
+    position: relative;
+    cursor: pointer;
+    margin-bottom: 10px;
+    border-radius: 50%;
+    overflow: hidden;
+    width: 120px;
+    height: 120px;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+#profile-picture {
+    display: none;
+}
+
+.change-photo-label {
+    color: #075E54;
+    cursor: pointer;
+    font-size: 0.9em;
+    margin-bottom: 20px;
+}
+
+#profile-form {
+    width: 100%;
+    max-width: 400px;
+}
+
+.profile-info {
+    margin-bottom: 15px;
+}
+
+.profile-info label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+    font-weight: 500;
+}
+
+.profile-info input[type="text"] {
+    width: calc(100% - 22px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    box-sizing: border-box;
+}
+
+.update-profile, .logout-btn {
+    background-color: #075E54;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    width: 100%;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.update-profile:hover, .logout-btn:hover {
+    background-color: #128C7E;
+}
+
+.logout-btn {
+    background-color: #d9534f;
+}
+
+.logout-btn:hover {
+    background-color: #c9302c;
+}
+
+/* Contact List Styling */
+#contact-list {
+    padding: 0;
+    margin: 0;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border-bottom: 1px solid #f0f2f5;
+}
+
+.contact-item:hover {
+    background-color: #f5f6f6;
+}
+
+.contact-avatar {
+    position: relative;
+    margin-right: 15px;
+}
+
+.contact-avatar img {
+    width: 49px;
+    height: 49px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.contact-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.contact-name {
+    font-weight: 500;
+    color: #111b21;
+    margin-bottom: 2px;
+}
+
+.contact-status {
+    font-size: 0.85rem;
+    color: #667781;
+}
+
+.online-status {
+    width: 12px;
+    height: 12px;
+    background: #00a884;
+    border: 2px solid white;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+}
+
+/* 🌙 Dark Mode Styles */
+body.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+.dark-mode .chat-container {
+    background-color: #1e1e1e;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .sidebar {
+    background-color: #2c2c2c;
+    border-right-color: #333;
+}
+
+.dark-mode .sidebar-header {
+    background-color: #333;
+    color: #f0f0f0;
+    border-bottom-color: #444;
+}
+
+.dark-mode .sidebar-title {
+    color: #f0f0f0;
+}
+
+.dark-mode .search-bar input {
+    background-color: #3a3a3a;
+    color: #e0e0e0;
+    box-shadow: none;
+}
+
+.dark-mode .tabs {
+    border-bottom-color: #444;
+}
+
+.dark-mode .tab-button {
+    color: #a5a5a5;
+}
+
+.dark-mode .tab-button.active {
+    color: #80cbc4;
+    border-bottom-color: #80cbc4;
+}
+
+.dark-mode .tab-button:hover {
+    color: #80cbc4;
+}
+
+.dark-mode #chat-list li:hover {
+    background-color: #333;
+}
+
+.dark-mode .chat-name {
+    color: #f0f0f0;
+}
+
+.dark-mode .chat-time {
+    color: #a5a5a5;
+}
+
+.dark-mode .chat-preview {
+    color: #a5a5a5;
+}
+
+.dark-mode .main-chat {
+    background-color: #222;
+    border-left-color: #333;
+}
+
+.dark-mode .chat-header {
+    background-color: #333;
+    color: #f0f0f0;
+    border-bottom-color: #444;
+}
+
+.dark-mode .chat-header-name {
+    color: #f0f0f0;
+}
+
+.dark-mode .chat-header-status {
+    color: #a5a5a5;
+}
+
+.dark-mode .message.sent {
+    background-color: #455a64;
+    color: #e0e0e0;
+}
+
+.dark-mode .message.received {
+    background-color: #37474f;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+.dark-mode .message-timestamp {
+    color: #a5a5a5;
+}
+
+.dark-mode .chat-input {
+    background-color: #333;
+    border-top-color: #444;
+}
+
+.dark-mode .chat-input input {
+    background-color: #3a3a3a;
+    color: #e0e0e0;
+    box-shadow: inset 0 0 0 1px #444;
+}
+
+.dark-mode .chat-input input:focus {
+    box-shadow: inset 0 0 0 2px #80cbc4;
+}
+
+.dark-mode .modal-content {
+    background-color: #2c2c2c;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.dark-mode .modal-header {
+    background-color: #333;
+    color: #f0f0f0;
+    border-bottom-color: #444;
+}
+
+.dark-mode .modal-header h2 {
+    color: #f0f0f0;
+}
+
+.dark-mode .modal-header .close {
+    color: #a5a5a5;
+}
+
+.dark-mode .modal-body {
+    color: #e0e0e0;
+}
+
+.dark-mode .modal-body input {
+    background-color: #3a3a3a;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+.dark-mode .modal-body input:focus {
+    border-color: #80cbc4;
+}
+
+.dark-mode .modal-body ul li {
+    border-bottom-color: #333;
+}
+
+.dark-mode .modal-body ul li:hover {
+    background-color: #333;
+}
+
+.dark-mode .modal-body ul li .user-details {
+    color: #f0f0f0;
+}
+
+.dark-mode .tab-content#profile {
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+}
+
+.dark-mode .tab-content#profile h2 {
+    color: #80cbc4;
+}
+
+.dark-mode .profile-info label {
+    color: #f0f0f0;
+}
+
+.dark-mode .profile-info input[type="text"] {
+    background-color: #3a3a3a;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+.dark-mode .update-profile,
+.dark-mode .logout-btn {
+    background-color: #00695c;
+    color: #e0e0e0;
+}
+
+.dark-mode .update-profile:hover,
+.dark-mode .logout-btn:hover {
+    background-color: #008069;
+}
+
+.dark-mode .contact-item:hover {
+    background-color: #333;
+}
+
+.dark-mode .contact-name {
+    color: #f0f0f0;
+}
+
+.dark-mode .contact-status {
+    color: #a5a5a5;
 }

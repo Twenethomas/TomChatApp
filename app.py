@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template
 from flask_migrate import Migrate
 from flask_login import LoginManager, current_user
@@ -47,4 +48,5 @@ def load_user(user_id):
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    socketio.run(app, debug=True)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+

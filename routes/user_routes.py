@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, url_for, session, redirect
 from flask_login import login_user, logout_user, login_required, current_user
-
+from sqlalchemy import func, case, and_, or_
+from sqlalchemy.orm import aliased
 from flask_socketio import emit
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import Contacts, FriendRequest, Messages, Users
@@ -29,7 +30,7 @@ def login():
         if user.is_admin:
             return jsonify({"redirect": url_for('admin.admin_dashboard')})
         return jsonify({"redirect": url_for('message.chat_page')})
-    emit('update_status', {'user_id': user.custom_id, 'status': 'online'}, broadcast=True)
+    emit('update_status', {'user_id': user.custom_id, 'status': 'online'})
         
     return jsonify({"error": "Invalid credentials"}), 401
 
@@ -71,7 +72,7 @@ def logout():
     logout_user()
     user= Users.query.filter_by(is_online=True)
     session.pop('user_id', None)  # ✅ Clear session
-    emit('update_status', {'user_id': user.custom_id, 'status': 'offline'}, broadcast=True)
+    emit('update_status', {'user_id': user.custom_id, 'status': 'offline'}, join_room=user.cudtom_id)
     
     return jsonify({'success': True, 'message': 'Logout successful'}), 200
 
@@ -149,13 +150,123 @@ def get_contacts():
 def search_users():
     query = request.args.get('query', '').strip()
     if not query:
-        return jsonify([])
-    users = Users.query.filter(Users.username.ilike(f'%{query}%')).filter(Users.custom_id != current_user.custom_id).all()
-    users_data = [{
-        'custom_id': user.custom_id,
-        'username': user.username,
-        'profile_picture': user.profile_picture or 'default_profile.jpg'
-    } for user in users]
+        return jsonify([]), 200
+
+    current_user_id = current_user.custom_id
+
+    # Get existing friend IDs
+    existing_friends = FriendRequest.query.filter(
+        (FriendRequest.status == 'accepted') &
+        ((FriendRequest.sender_id == current_user_id) |
+         (FriendRequest.receiver_id == current_user_id))
+    ).all()
+
+    friend_ids = {req.receiver_id if req.sender_id == current_user_id else req.sender_id
+                  for req in existing_friends}
+
+    # Alias the Users model for clarity in subqueries
+    UserAlias = aliased(Users)
+
+    # Modified subquery to determine friend request status: limit the subquery to 1 record,
+    # ensuring that we get only the most recent (highest custom_id) status.
+    request_status_subquery = (
+        db.session.query(
+            case(
+                (FriendRequest.status == 'pending', 'pending'),
+                (FriendRequest.status == 'accepted', 'accepted'),
+                (FriendRequest.status == 'declined', 'declined'),
+                else_='none'
+            )
+        )
+        .filter(
+            or_(
+                and_(
+                    FriendRequest.sender_id == current_user_id,
+                    FriendRequest.receiver_id == UserAlias.custom_id
+                ),
+                and_(
+                    FriendRequest.receiver_id == current_user_id,
+                    FriendRequest.sender_id == UserAlias.custom_id
+                )
+            )
+        )
+        .order_by(FriendRequest.custom_id.desc())  # Order to pick the most recent record
+        .limit(1)  # Limit the subquery to a single result
+        .correlate(UserAlias)
+        .scalar_subquery()
+    )
+
+    # Subquery to count mutual friends between current user and each potential friend
+    mutual_friends_subquery = (
+        db.session.query(func.count(FriendRequest.custom_id))
+        .filter(
+            or_(
+                and_(
+                    FriendRequest.sender_id == UserAlias.custom_id,
+                    FriendRequest.receiver_id.in_(
+                        db.session.query(FriendRequest.receiver_id)
+                        .filter(
+                            FriendRequest.sender_id == current_user_id,
+                            FriendRequest.status == 'accepted'
+                        )
+                    )
+                ),
+                and_(
+                    FriendRequest.receiver_id == UserAlias.custom_id,
+                    FriendRequest.sender_id.in_(
+                        db.session.query(FriendRequest.sender_id)
+                        .filter(
+                            FriendRequest.receiver_id == current_user_id,
+                            FriendRequest.status == 'accepted'
+                        )
+                    )
+                )
+            ),
+            FriendRequest.status == 'accepted'
+        )
+        .correlate(UserAlias)
+        .scalar_subquery()
+    )
+
+    # Main query to search users
+    query_filters = [
+        UserAlias.username.ilike(f'%{query}%'),
+        UserAlias.custom_id != current_user_id
+    ]
+    if friend_ids:
+        query_filters.append(~UserAlias.custom_id.in_(friend_ids))
+
+    users_query = (
+        db.session.query(UserAlias)
+        .filter(*query_filters)
+        .add_columns(
+            request_status_subquery.label('request_status'),
+            mutual_friends_subquery.label('mutual_friends')
+        )
+        .order_by(
+            case(
+                (request_status_subquery == 'pending', 1),
+                (request_status_subquery == 'accepted', 2),
+                (request_status_subquery == 'none', 3)
+            ),
+            mutual_friends_subquery.desc(),
+            UserAlias.username.asc()
+        )
+    )
+
+    results = users_query.all()
+
+    # Process the result rows
+    users_data = []
+    for user, request_status, mutual_friends in results:
+        users_data.append({
+            'custom_id': user.custom_id,
+            'username': user.username,
+            'profile_picture': user.profile_picture or 'default_profile.jpg',
+            'mutual_friends': mutual_friends,
+            'request_status': request_status
+        })
+
     return jsonify(users_data), 200
 
 @user_bp.route('/api/friends', methods=['GET'])

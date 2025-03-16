@@ -1,138 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TomChat</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TomChat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
 <body>
-  <div class="chat-container">
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <span class="sidebar-title">TomChat</span>
-        <button class="add-friend-button" onclick="openAddFriendModal()">
-          <i class="fas fa-user-plus"></i>
-        </button>
-      </div>
-      <div class="search-bar">
-        <input type="text" id="search-chats" placeholder="Search chats..." />
-      </div>
-      <!-- Tabs -->
-      <div class="tabs">
-        <button class="tab-button active" onclick="openTab('chats')">
-          <i class="fas fa-comments"></i>
-          <span>Chats</span>
-        </button>
-        <button class="tab-button" onclick="openTab('contacts')">
-          <i class="fas fa-address-book"></i>
-          <span>Contacts</span>
-        </button>
-        <button class="tab-button" onclick="openTab('friend-requests')">
-          <i class="fas fa-user-friends"></i>
-          <span>Requests</span>
-        </button>
-      </div>
-      <!-- Tab Content -->
-      <div class="tab-content active" id="chats">
-        <ul id="chat-list"></ul>
-      </div>
-      <div class="tab-content" id="contacts">
-        <ul id="contact-list"></ul>
-      </div>
-      <div class="tab-content"style="padding:30px;" id="friend-requests">
-        <ul id="friend-request-list"></ul>
-        <h3>No request Recieved</h3><h5>All friend request would be shown here</h5>
-      </div>
-    </div>
-    <!-- Main Chat Window -->
-    <div class="main-chat">
-      <div class="chat-header">
-        <div class="chat-header-avatar">
-          <img src="{{ url_for('static', filename='images/default_profile.jpg') }}" alt="Profile Picture" />
-        </div>
-        <div class="chat-header-details">
-          <div class="chat-header-name" id="chat-header-name">Select a user</div>
-          <div class="chat-header-status" id="chat-header-status"></div>
-          <div class="chat-header-option" id="chat-header-option" onclick="logout()">🤝</div>
+    <div class="chat-container">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <span class="sidebar-title">TomChat</span>
+                <button class="add-friend-button" onclick="openModal('add-friend-modal')">
+                    <i class="fas fa-user-plus"></i>
+                </button>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="search-chats" placeholder="Search chats..." />
+            </div>
+            <div class="tabs">
+                <button class="tab-button active" onclick="openTab('chats')">
+                    <i class="fas fa-comments"></i>
+                    <span>Chats</span>
+                </button>
+                <button class="tab-button" onclick="openTab('contacts')">
+                    <i class="fas fa-address-book"></i>
+                    <span>Contacts</span>
+                </button>
+                <button class="tab-button" onclick="openTab('friend-requests')">
+                    <i class="fas fa-user-friends"></i>
+                    <span>Requests</span>
+                </button>
+                <button class="tab-button" onclick="openTab('profile')">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </button>
+            </div>
+            <div class="tab-content active" id="chats">
+                <div id="online-friends-container" style="overflow-x: auto; white-space: nowrap; margin: 10px;">
+                    <div id="online-friends" style="display: inline-flex; gap: 10px;"></div>
+                </div>
+                <ul id="chat-list"></ul>
+            </div>
+            <div class="tab-content" id="contacts">
+                <ul id="contact-list"></ul>
+            </div>
+            <div class="tab-content" id="friend-requests" style="padding:30px;">
+                <ul id="friend-request-list"></ul>
+                <h5>All friend requests would be shown here</h5>
+            </div>
+            <div class="tab-content" id="profile">
+                <h2>My Profile</h2>
+                <div class="profile-container">
+                    <label class="profile-img" for="profile-picture">
+                        <img id="profile-preview" src="{{ current_user.profile_picture or url_for('static', filename='images/default_profile.jpg') }}" alt="Profile Picture">
+                    </label>
+                    <input type="file" id="profile-picture" name="profile_picture" accept="image/*" onchange="previewProfileImage()" />
+                    <span class="change-photo-label">Change Profile Photo</span>
 
+                    <form id="profile-form" onsubmit="updateProfile(event)" enctype="multipart/form-data">
+                        <div class="profile-info">
+                            <label for="profile-username">Name</label>
+                            <input type="text" id="profile-username" name="username" value="{{ current_user.username }}" required />
+                        </div>
+                        <button type="submit" class="update-profile">Save</button>
+                    </form>
+
+                    <button onclick="logout()" class="logout-btn"> <i class="fas fa-sign-out-alt"></i> Logout</button>
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="chat-messages" id="chat-messages"></div>
-      <div class="chat-input">
-        <input type="text" id="message-input" placeholder="Type a message..." disabled />
-        <button id="send-button" disabled>Send</button>
-      </div>
+        <div class="main-chat">
+            <div class="chat-header">
+            <button class="toggle-sidebar-button" onclick="toggleSidebar()">←</button>
+            <div class="chat-header-avatar">
+                <img src="{{ url_for('static', filename='images/default_profile.jpg') }}" alt="Profile Picture" />
+            </div>
+            <div class="chat-header-details">
+                <div class="chat-header-name" id="chat-header-name">Select a user</div>
+                <div class="chat-header-status" id="chat-header-status"></div>
+            </div>
+            <button id="dark-mode-toggle">
+                <i class="fas fa-moon"></i>
+            </button>
+            </div>
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-input">
+                <input type="text" id="message-input" placeholder="Type a message..." disabled />
+                <button id="send-button" disabled>
+                  <i class="fas fa-paper-plane"></i>
+              </button>
+            </div>
+        </div>
+        <div class="floating-button" onclick="openModal('add-friend-modal')">
+            <i class="fas fa-comment-medical"></i>
+        </div>
+        <div id="addChatModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+                    <h2>Add Chat</h2>
+                    <span class="close" onclick="closeModal('addChatModal')">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="search-user" placeholder="Search users..." onkeyup="searchUsersForChat()" />
+                    <ul id="user-list"></ul>
+                </div>
+            </div>
+        </div>
+        <div id="add-friend-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Add Friend</h2>
+                    <span class="close" onclick="closeAddFriendModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="search-friend" placeholder="Search users..." onkeyup="searchUsersForFriend()" />
+                    <ul id="friend-list"></ul>
+                </div>
+            </div>
+        </div>
     </div>
-    <!-- Floating Add Chat Button -->
-    <div class="floating-button" onclick="openModal('add-friend-modal')">
-      <i class="fas fa-comment-medical"></i>
-    </div>
-    <!-- Add Chat Modal -->
-    <div id="addChatModal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Add Chat</h2>
-          <span class="close" onclick="closeModal('addChatModal')">&times;</span>
-        </div>
-        <div class="modal-body">
-          <input type="text" id="search-user" placeholder="Search users..." onkeyup="searchUsersForChat()" />
-          <ul id="user-list"></ul>
-        </div>
-      </div>
-    </div>
-    <!-- Add Friend Modal -->
-    <div id="add-friend-modal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Add Friend</h2>
-          <span class="close" onclick="closeAddFriendModal()">&times;</span>
-        </div>
-        <div class="modal-body">
-          <input type="text" id="search-friend" placeholder="Search users..." onkeyup="searchUsersForFriend()" />
-          <ul id="friend-list"></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-  <script>
-    var currentUser = {
-      custom_id: "{{ current_user.custom_id }}",
-      username: "{{ current_user.username }}",
-      profile_picture: "{{ current_user.profile_picture or 'default_profile.jpg' }}",
-      userStatus : '{"Online" if user.is_online else "Offline"}'
-    };
-    // Sidebar toggle logic (optional additional behavior can be added here)
-    const sidebar = document.getElementById('sidebar');
-    document.addEventListener('click', function (event) {
-      if (!sidebar.contains(event.target)) {
-        sidebar.classList.remove('expanded');
-      }
-    });
-    sidebar.addEventListener('mouseenter', function () {
-      sidebar.classList.add('expanded');
-    });
-    sidebar.addEventListener('mouseleave', function () {
-      sidebar.classList.remove('expanded');
-    });
-    function openTab(tabName) {
-      const tabContents = document.querySelectorAll('.tab-content');
-      tabContents.forEach(tab => tab.classList.remove('active'));
-      document.getElementById(tabName).classList.add('active');
-      const tabButtons = document.querySelectorAll('.tab-button');
-      tabButtons.forEach(button => button.classList.remove('active'));
-      document.querySelector(`.tab-button[onclick="openTab('${tabName}')"]`).classList.add('active');
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        var currentUser = {
+            custom_id: "{{ current_user.custom_id }}",
+            username: "{{ current_user.username }}",
+            profile_picture: "{{ current_user.profile_picture }}",
+            userStatus : "{{ 'Online' if current_user.is_online else 'Offline' }}",
+            default_avater: "{{ url_for('static', filename='images/default_profile.jpg') }}"
+        };
+
+        // Emit an event to update user status if needed
+        socket.emit("update_user_status", currentUser.custom_id, currentUser.userStatus);
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+    const darkModeToggle = document.getElementById("dark-mode-toggle");
+    const body = document.body;
+
+    // Load saved preference
+    if (localStorage.getItem("darkMode") === "enabled") {
+        body.classList.add("dark-mode");
+        if (darkModeToggle) {
+            darkModeToggle.checked = true; // Optionally update the toggle state
+        }
     }
-    
-    socket.emit("update_user_status",currentUser.custom_id,currentUser.userStatus)
-    function logout(user_id){
-         fetch(`/api/logout/${requestId}`)
+
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener("click", function () {
+            console.log("Dark mode toggle button clicked!"); // ADD THIS LINE
+            body.classList.toggle("dark-mode");
+
+            // Save user preference
+            if (body.classList.contains("dark-mode")) {
+                localStorage.setItem("darkMode", "enabled");
+            } else {
+                localStorage.setItem("darkMode", "disabled");
+            }
+        });
     }
-  </script>
+});
+    </script>
 </body>
 </html>

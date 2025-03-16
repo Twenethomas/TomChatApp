@@ -13,7 +13,7 @@ class Users(db.Model, UserMixin):
     custom_id = db.Column(db.String(50), primary_key=True, default=lambda: str(uuid.uuid4()))
     username = db.Column(db.String(50), unique=True, nullable=False, index=True)
     password = db.Column(db.String(255), nullable=False)
-    profile_picture = db.Column(db.String(255), default='default_profile.jpg')
+    profile_picture = db.Column(db.String(255), default='static/images/default_profile.jpg')
     is_admin = db.Column(db.Boolean, default=False)
     is_online = db.Column(db.Boolean, default=False, index=True)
     is_blocked = db.Column(db.Boolean, default=False, index=True)

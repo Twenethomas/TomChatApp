@@ -2,12 +2,11 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_socketio import SocketIO
 
+# Initialize extensions
 db = SQLAlchemy()
 login_manager = LoginManager()
-socketio = SocketIO()
-
+socketio = SocketIO(cors_allowed_origins="*")  
 @login_manager.user_loader
-def load_user(username):
+def load_user(user_id):
     from models import Users
-    return Users.query.filter_by(username=username).first()
-
+    return Users.query.get(user_id)
