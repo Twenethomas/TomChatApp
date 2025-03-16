@@ -11,7 +11,7 @@ from sqlalchemy.dialects.postgresql import UUID
 
 class Users(db.Model, UserMixin):
     __tablename__ = 'users'
-    custom_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    custom_id = db.Column(db.String(50), primary_key=True, default=lambda: str(uuid.uuid4()))  
     username = db.Column(db.String(50), unique=True, nullable=False, index=True)
     password = db.Column(db.String(255), nullable=False)
     profile_picture = db.Column(db.String(255), default='static/images/default_profile.jpg')
