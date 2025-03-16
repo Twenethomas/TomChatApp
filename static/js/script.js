@@ -1,5 +1,5 @@
 // Establish Socket.IO connection
-const socket = io.connect("https://tomchatapp.onrender.com");
+const socket = io.connect("https://192.168.1.10:5000");
 
 // ----- Sidebar & Tab Functions -----
 function openTab(tabName) {
