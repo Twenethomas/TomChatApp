@@ -71,7 +71,7 @@ def logout():
     logout_user()
     user= Users.query.filter_by(is_online=True)
     session.pop('user_id', None)  # ✅ Clear session
-    emit('update_status', {'user_id': user.custom_id, 'status': 'offline'}, join_room=user.cudtom_id)
+    emit('update_status', {'user_id': user.custom_id, 'status': 'offline'}, room=user.custom_id)  
     
     return jsonify({'success': True, 'message': 'Logout successful'}), 200
 
