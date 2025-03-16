@@ -1,5 +1,8 @@
-// Establish Socket.IO connection
-const socket = io.connect("https://192.168.1.10:5000");
+// Replace with dynamic URL based on environment
+const socket = io.connect(window.location.origin, {
+  withCredentials: true,
+  secure: true // Force HTTPS
+});
 
 // ----- Sidebar & Tab Functions -----
 function openTab(tabName) {
