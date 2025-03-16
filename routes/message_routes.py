@@ -48,18 +48,19 @@ def send_message():
     )
     db.session.add(new_message)
     db.session.commit()
-    sender= Users.query.filter_by(custom_id = current_user.custom_id).first()
-   
-    @socketio.emit('receive_message', {
-    'sender_id': str(current_user.custom_id),  # Convert to string
-    'receiver_id': receiver_id,
-    'message_text': message_text,
-    'sender_name': sender.username,
-    'timestamp': new_message.timestamp.strftime('%H:%M')
+    sender = Users.query.filter_by(custom_id=current_user.custom_id).first()
+    
+    # Fix 1: Remove @ symbol from socketio.emit
+    # Fix 2: Proper indentation
+    socketio.emit('receive_message', {
+        'sender_id': str(current_user.custom_id),  # Fixed closing parenthesis
+        'receiver_id': receiver_id,
+        'message_text': message_text,
+        'sender_name': sender.username,
+        'timestamp': new_message.timestamp.strftime('%H:%M')
     }, room=receiver_id)
 
     return jsonify({'success': True, 'message': 'Message sent successfully'}), 201
-
 @message_bp.route('/chat')
 @login_required
 def chat_page():
