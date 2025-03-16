@@ -52,9 +52,8 @@ def register():
     if existing_user:
         return jsonify({"redirect": "login_tab", "message": "User already exists. Please log in."}), 200
 
-    custom_id = f"FCM.41.008.{Users.query.count() + 1:03d}"
+    
     new_user = Users(
-        custom_id=custom_id,
         username=username,
         password=generate_password_hash(password),
         is_admin=is_admin
