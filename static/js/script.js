@@ -331,7 +331,7 @@ function searchUsersForFriend() {
             const friendList = document.getElementById("friend-list");
             friendList.innerHTML = "";
             data.forEach(user => {
-                const isRequestSent = user.request_status !== "none";
+                const isRequestSent = user.request_status == "none";
                 const buttonText = isRequestSent ? "Request Sent" : "Add Friend";
                 const disabledAttr = isRequestSent ? "disabled" : "";
                 const listItem = document.createElement("li");
