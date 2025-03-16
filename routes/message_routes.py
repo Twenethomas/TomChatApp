@@ -16,7 +16,7 @@ def handle_connect():
             user.is_online = True
             db.session.commit()
             join_room(user.custom_id)
-            emit('update_status', {'user_id': user.custom_id, 'status': 'online'}, broadcast=True)
+            emit('update_status', {'user_id': user.custom_id, 'status': 'online'}, room=current_user.custom_id)
 
 @socketio.on('disconnect')
 def handle_disconnect():
