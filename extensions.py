@@ -5,4 +5,4 @@ from flask_socketio import SocketIO
 # Initialize extensions
 db = SQLAlchemy()
 login_manager = LoginManager()
-socketio = SocketIO(cors_allowed_origins="*")
+socketio = socketio = SocketIO(cors_allowed_origins="*", async_mode='eventlet')
