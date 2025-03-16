@@ -57,3 +57,11 @@ class FriendRequest(db.Model):
     receiver_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.custom_id'), nullable=False)
     status = db.Column(db.String(20), default="pending")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Settings(db.Model):
+    __tablename__ = 'settings'
+    custom_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    key = db.Column(db.String(100), unique=True, nullable=False)
+    value = db.Column(db.String(500), nullable=False)
+    description = db.Column(db.Text)
+    last_modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
