@@ -52,9 +52,8 @@ def register():
     if existing_user:
         return jsonify({"redirect": "login_tab", "message": "User already exists. Please log in."}), 200
 
-    custom_id = f"FCM.41.008.{Users.query.count() + 1:03d}"
+    
     new_user = Users(
-        custom_id=custom_id,
         username=username,
         password=generate_password_hash(password),
         is_admin=is_admin
@@ -69,12 +68,15 @@ def register():
 @user_bp.route('/logout', methods=['POST'])
 @login_required
 def logout():
-    logout_user()
-    user= Users.query.filter_by(is_online=True)
-    session.pop('user_id', None)  # ✅ Clear session
-    emit('update_status', {'user_id': user.custom_id, 'status': 'offline'}, join_room=user.cudtom_id)
-    
-    return jsonify({'success': True, 'message': 'Logout successful'}), 200
+    user = Users.query.filter_by(custom_id=current_user.custom_id).first()
+    if user:
+        logout_user()
+        session.pop('user_id', None)
+        emit('update_status', {
+            'user_id': str(user.custom_id),  # Convert to string
+            'status': 'offline'
+        }, room=str(user.custom_id))  # Convert to string
+    return jsonify({'success': True}), 200
 
 @user_bp.route('/api/friend_request', methods=['POST'])
 @login_required

@@ -1,5 +1,13 @@
-// Establish Socket.IO connection
-const socket = io.connect("http://192.168.1.10:5000");
+const socket = io(window.location.origin, {
+  withCredentials: true,
+  secure: true,
+  reconnection: true,             // enable reconnection
+  reconnectionAttempts: Infinity, // try to reconnect indefinitely
+  reconnectionDelay: 1000,        // initial delay of 1 second
+  reconnectionDelayMax: 5000,     // maximum delay of 5 seconds between attempts
+  randomizationFactor: 0.5        // add some randomness to avoid synchronization issues
+});
+
 
 // ----- Sidebar & Tab Functions -----
 function openTab(tabName) {
@@ -247,6 +255,7 @@ socket.on("update_status", (data) => {
 });
 
 socket.on("receive_message", data => {
+    if (!data.sender_id || !data.receiver_id) return;
     const currentChatId = document.getElementById("chat-header-name")?.dataset.receiverId;
     const isCurrentChat = data.sender_id === currentChatId;
     
@@ -331,7 +340,7 @@ function searchUsersForFriend() {
             const friendList = document.getElementById("friend-list");
             friendList.innerHTML = "";
             data.forEach(user => {
-                const isRequestSent = user.request_status !== "none";
+                const isRequestSent = user.request_status == "none";
                 const buttonText = isRequestSent ? "Request Sent" : "Add Friend";
                 const disabledAttr = isRequestSent ? "disabled" : "";
                 const listItem = document.createElement("li");
@@ -423,7 +432,7 @@ socket.on("profile_updated", (data) => {
     // ✅ Update current user profile if it matches
     if (currentUser.custom_id === data.user_id) {
         currentUser.username = data.username;
-        currentUser.profile_picture = "/" + data.profile_picture; // Ensure proper path
+        currentUser.profile_picture = new URL(data.profile_picture, window.location.origin).href; // Ensure proper path
         document.getElementById("profile-preview").src = currentUser.profile_picture;
         document.getElementById("profile-username").value = currentUser.username;
     }
@@ -501,8 +510,10 @@ function previewProfileImage() {
     .then(data => {
         if (data.success) {
             // Disconnect Socket.IO
-            if (socket) socket.disconnect()
-            // Redirect to login
+            if (socket) {
+              socket.removeAllListener();
+              socket.disconnect();
+                        }// Redirect to login
             window.location.href = "/"
         }
     })
@@ -513,3 +524,13 @@ function previewProfileImage() {
 }
 // Preview Image Before Upload
 
+socket.on("connect_error", (err) => {
+    console.error("Connection error:", err);
+    setTimeout(() => socket.connect(), 5000);
+});
+
+socket.on("disconnect", (reason) => {
+    if (reason === "io server disconnect") {
+        socket.connect();
+    }
+});
