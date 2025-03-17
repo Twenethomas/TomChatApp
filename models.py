@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from flask_login import UserMixin
 from extensions import db
 from sqlalchemy.dialects.postgresql import UUID
@@ -29,7 +29,7 @@ class Messages(db.Model):
     sender_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.custom_id'), nullable=False)
     receiver_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.custom_id'), nullable=False)
     message_text = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    timestamp = db.Column(db.DateTime, default=datetime.now(timezone.utc), index=True)
     is_read = db.Column(db.Boolean, default=False, index=True)
 
 class Groups(db.Model):
@@ -37,7 +37,7 @@ class Groups(db.Model):
     custom_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     group_name = db.Column(db.String(100), nullable=False)
     created_by = db.Column(UUID(as_uuid=True), db.ForeignKey('users.custom_id', ondelete='SET NULL'))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
 class GroupMembers(db.Model):
     __tablename__ = 'groupmembers'
@@ -56,7 +56,7 @@ class FriendRequest(db.Model):
     sender_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.custom_id'), nullable=False)
     receiver_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.custom_id'), nullable=False)
     status = db.Column(db.String(20), default="pending")
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
 class Settings(db.Model):
     __tablename__ = 'settings'
@@ -64,4 +64,4 @@ class Settings(db.Model):
     key = db.Column(db.String(100), unique=True, nullable=False)
     value = db.Column(db.String(500), nullable=False)
     description = db.Column(db.Text)
-    last_modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_modified = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))

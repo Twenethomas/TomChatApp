@@ -1,13 +1,27 @@
 const socket = io(window.location.origin, {
-  withCredentials: true,
-  secure: true,
-  reconnection: true,             // enable reconnection
-  reconnectionAttempts: Infinity, // try to reconnect indefinitely
-  reconnectionDelay: 1000,        // initial delay of 1 second
-  reconnectionDelayMax: 5000,     // maximum delay of 5 seconds between attempts
-  randomizationFactor: 0.5        // add some randomness to avoid synchronization issues
-});
-
+    withCredentials: true,
+    secure: true,
+    reconnection: true,
+    reconnectionAttempts: Infinity,
+    reconnectionDelay: 2000, // Start with 2s delay
+    reconnectionDelayMax: 10000, // Max 10s between attempts
+    transports: ["websocket"], // Force WebSocket only
+  });
+  
+  // Handle errors
+  socket.on("connect_error", (err) => {
+      console.error("WebSocket Connection error:", err);
+      setTimeout(() => socket.connect(), 3000); // Retry connection after 3s
+  });
+  
+  // Handle disconnects
+  socket.on("disconnect", (reason) => {
+      console.warn("Disconnected:", reason);
+      if (reason === "io server disconnect") {
+          socket.connect(); // Attempt reconnection
+      }
+  });
+  
 
 // ----- Sidebar & Tab Functions -----
 function openTab(tabName) {
@@ -524,13 +538,13 @@ function previewProfileImage() {
 }
 // Preview Image Before Upload
 
-socket.on("connect_error", (err) => {
-    console.error("Connection error:", err);
-    setTimeout(() => socket.connect(), 5000);
-});
+// socket.on("connect_error", (err) => {
+//     console.error("Connection error:", err);
+//     setTimeout(() => socket.connect(), 5000);
+// });
 
-socket.on("disconnect", (reason) => {
-    if (reason === "io server disconnect") {
-        socket.connect();
-    }
-});
+// socket.on("disconnect", (reason) => {
+//     if (reason === "io server disconnect") {
+//         socket.connect();
+//     }
+// });
