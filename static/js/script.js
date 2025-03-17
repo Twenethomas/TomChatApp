@@ -1,9 +1,11 @@
-const socket = io.connect(window.location.origin, {
+const socket = io(window.location.origin, {
   withCredentials: true,
   secure: true,
-  reconnection: true,
-  reconnectionAttempts: Infinity,
-  reconnectionDelay: 1000
+  reconnection: true,             // enable reconnection
+  reconnectionAttempts: Infinity, // try to reconnect indefinitely
+  reconnectionDelay: 1000,        // initial delay of 1 second
+  reconnectionDelayMax: 5000,     // maximum delay of 5 seconds between attempts
+  randomizationFactor: 0.5        // add some randomness to avoid synchronization issues
 });
 
 
