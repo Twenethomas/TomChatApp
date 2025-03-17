@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from flask_socketio import emit, join_room, leave_room
 from models import Messages, Users
 from extensions import db, socketio
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 message_bp = Blueprint('message', __name__)
@@ -44,7 +44,7 @@ def send_message():
         sender_id=current_user.custom_id,
         receiver_id=receiver_id,
         message_text=message_text,
-        timestamp=datetime.utcnow()
+        timestamp=datetime.now(timezone.utc)
     )
     db.session.add(new_message)
     db.session.commit()
