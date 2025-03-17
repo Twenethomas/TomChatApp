@@ -10,11 +10,12 @@ app = Flask(__name__)
 app.config.from_object(Config)
 
 # Initialize extensions
-db.init_app(app)
-socketio.init_app(app, cors_allowed_origins="*")
+db.init_app(app)# Ensure we use eventlet (or gevent) as the async mode
+socketio.init_app(app, cors_allowed_origins="*", async_mode="eventlet")
 migrate = Migrate(app, db)
 login_manager.init_app(app)
 login_manager.login_view = 'user.login'
+
 
 # Register Blueprints
 from models import Users  # Needed for user_loader
