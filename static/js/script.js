@@ -1,9 +1,11 @@
 const socket = io.connect(window.location.origin, {
   withCredentials: true,
-  secure: true, // Force HTTPS/WSS
+  secure: true,
   reconnection: true,
-  reconnectionAttempts: 5
+  reconnectionAttempts: Infinity,
+  reconnectionDelay: 1000
 });
+
 
 // ----- Sidebar & Tab Functions -----
 function openTab(tabName) {
